@@ -3,1244 +3,989 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎵 TikTok Music Bot</title>
+<title>TikBot — Dashboard</title>
 <link rel="icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   DESIGN BRIEF:
-   - User: streamer / moderator dashboard
-   - Feeling: PRECISION — like a pro DJ booth meets Linear
-   - Reference: Linear + Raycast + a TikTok dark theme
-   - Dark UI with hot pink/cyan TikTok accent
-   - ONE thing to remember: the glowing source selector tabs
-   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--s1:#111115;--s2:#18181d;--s3:#222228;--s4:#2e2e36;--s5:#3a3a44;
+  --pink:#fe2c55;--cyan:#25f4ee;--purple:#9b5de5;--green:#1db954;--orange:#ff6b35;--amber:#f59e0b;--red:#ef4444;
+  --pink-10:rgba(254,44,85,.10);--pink-20:rgba(254,44,85,.20);
+  --cyan-10:rgba(37,244,238,.10);--cyan-20:rgba(37,244,238,.20);
+  --purple-10:rgba(155,93,229,.10);--green-10:rgba(29,185,84,.10);--green-20:rgba(29,185,84,.20);
+  --orange-10:rgba(255,107,53,.10);--amber-10:rgba(245,158,11,.10);--red-10:rgba(239,68,68,.10);
+  --t1:#f4f4f6;--t2:#9898a8;--t3:#4a4a58;
+  --b1:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.10);--b3:rgba(255,255,255,0.16);
+  --r4:4px;--r6:6px;--r8:8px;--r10:10px;--r12:12px;--r16:16px;--r20:20px;--rfull:9999px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.3);--sh-md:0 4px 12px rgba(0,0,0,.4);--sh-lg:0 12px 32px rgba(0,0,0,.5);
+  --sh-pink:0 0 20px rgba(254,44,85,.22),0 0 6px rgba(254,44,85,.12);
+  --sidebar-w:220px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;scrollbar-width:thin;scrollbar-color:var(--s4) transparent}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--s4);border-radius:var(--rfull)}
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== CONNECT SCREEN ===== */
+#connect-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(9,9,11,.97);backdrop-filter:blur(24px)}
+.connect-card{width:min(420px,92vw);background:var(--s1);border:1px solid var(--b2);border-radius:var(--r20);padding:2.25rem;position:relative;overflow:hidden;box-shadow:var(--sh-lg);animation:cardIn .5s cubic-bezier(.16,1,.3,1) both}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.connect-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan))}
+.cc-logo{text-align:center;margin-bottom:1.5rem}
+.cc-icon{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:var(--r16);background:linear-gradient(135deg,var(--pink),var(--purple));font-size:1.5rem;box-shadow:var(--sh-pink);margin-bottom:.875rem}
+.cc-title{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-.03em;background:linear-gradient(135deg,var(--t1) 40%,var(--t2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.25rem}
+.cc-sub{font-size:.825rem;color:var(--t2)}
+.field-lbl{display:block;font-size:.688rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:.4rem}
+.field-inp{width:100%;padding:.7rem .9rem;background:var(--s3);border:1px solid var(--b1);border-radius:var(--r10);color:var(--t1);font-family:'IBM Plex Sans',sans-serif;font-size:.938rem;outline:none;transition:border-color .15s,box-shadow .15s;margin-bottom:.875rem}
+.field-inp:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(254,44,85,.12)}
+.field-inp::placeholder{color:var(--t3)}
+.btn-connect{width:100%;padding:.8rem;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;border-radius:var(--r10);font-family:'Syne',sans-serif;font-size:.938rem;font-weight:700;cursor:pointer;transition:all .2s cubic-bezier(.16,1,.3,1);box-shadow:0 4px 16px rgba(254,44,85,.28);position:relative;overflow:hidden}
+.btn-connect::after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.08),transparent);border-radius:inherit}
+.btn-connect:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(254,44,85,.38)}
+.btn-connect:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.conn-status{margin-top:.875rem;font-size:.813rem;color:var(--t2);min-height:1.3rem;text-align:center}
+.conn-status.err{color:var(--pink)}.conn-status.ok{color:var(--cyan)}
 
-:root {
-  /* Surfaces */
-  --bg:       #09090b;
-  --s0:       #09090b;
-  --s1:       #111115;
-  --s2:       #18181d;
-  --s3:       #222228;
-  --s4:       #2e2e36;
-  --s5:       #3a3a44;
+/* ===== APP SHELL ===== */
+#app{display:none;min-height:100vh;flex-direction:row}
+#app.visible{display:flex}
 
-  /* Brand */
-  --pink:     #fe2c55;
-  --cyan:     #25f4ee;
-  --purple:   #9b5de5;
-  --green:    #1db954;   /* Spotify */
-  --orange:   #ff6b35;   /* SoundCloud */
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar-w);background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform .3s}
+.sb-logo{display:flex;align-items:center;gap:.625rem;padding:1.25rem 1.1rem;border-bottom:1px solid var(--b1)}
+.sb-logo-mark{width:30px;height:30px;border-radius:var(--r8);background:linear-gradient(135deg,var(--pink),var(--purple));display:grid;place-items:center;font-size:.8rem;box-shadow:var(--sh-pink);flex-shrink:0}
+.sb-logo-txt{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:-.02em}
+.sb-logo-txt .p{color:var(--pink)}.sb-logo-txt .c{color:var(--cyan)}
+.sb-section{padding:.5rem .7rem;flex:1;overflow-y:auto}
+.sb-label{font-size:.625rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);padding:.5rem .5rem .3rem;margin-top:.5rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .625rem;border-radius:var(--r8);cursor:pointer;transition:all .15s;color:var(--t2);font-size:.825rem;font-weight:500;position:relative;border:none;background:none;width:100%;text-align:left;font-family:'IBM Plex Sans',sans-serif}
+.sb-item:hover{background:var(--s2);color:var(--t1)}
+.sb-item.active{background:var(--pink-10);color:var(--pink)}
+.sb-item .sb-icon{font-size:.95rem;width:18px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;background:var(--pink);color:#fff;font-size:.6rem;font-weight:700;padding:.1em .4em;border-radius:var(--rfull);min-width:18px;text-align:center}
+.sb-bottom{padding:.875rem 1.1rem;border-top:1px solid var(--b1)}
+.sb-user{display:flex;align-items:center;gap:.6rem}
+.sb-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--s4),var(--s5));display:grid;place-items:center;font-family:'IBM Plex Mono',monospace;font-size:.65rem;font-weight:500;color:var(--cyan);border:1px solid var(--b2);flex-shrink:0}
+.sb-username{font-size:.813rem;font-weight:500;color:var(--t2);font-family:'IBM Plex Mono',monospace;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sb-disc-btn{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.75rem;padding:.25rem;transition:color .15s;border-radius:var(--r4)}
+.sb-disc-btn:hover{color:var(--pink)}
+.live-indicator{display:flex;align-items:center;gap:.4rem;padding:.35rem .625rem;background:var(--pink-10);border-radius:var(--rfull);margin-bottom:.75rem;border:1px solid var(--pink-20)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);animation:ldot 1.5s ease-in-out infinite;flex-shrink:0}
+@keyframes ldot{0%,100%{opacity:1}50%{opacity:.3}}
+.live-text{font-size:.688rem;font-weight:700;letter-spacing:.07em;color:var(--pink);text-transform:uppercase}
+.live-viewers{margin-left:auto;font-size:.688rem;color:var(--t2);font-family:'IBM Plex Mono',monospace}
 
-  /* Dimmed */
-  --pink-10:  rgba(254,44,85,.10);
-  --pink-20:  rgba(254,44,85,.20);
-  --cyan-10:  rgba(37,244,238,.10);
-  --cyan-20:  rgba(37,244,238,.20);
-  --green-10: rgba(29,185,84,.10);
-  --green-20: rgba(29,185,84,.20);
-  --orange-10:rgba(255,107,53,.10);
-  --orange-20:rgba(255,107,53,.20);
-  --purple-10:rgba(155,93,229,.10);
+/* ===== MAIN CONTENT ===== */
+.main-wrap{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.75rem;background:rgba(9,9,11,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1)}
+.topbar-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
+.topbar-right{display:flex;align-items:center;gap:.5rem}
+.page-content{padding:1.5rem 1.75rem;flex:1}
 
-  /* Text */
-  --t1: #f4f4f6;
-  --t2: #9898a8;
-  --t3: #4a4a58;
+/* ===== CARDS & SHARED ===== */
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r16);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent);pointer-events:none}
+.card-head{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.125rem;border-bottom:1px solid var(--b1)}
+.card-title{font-size:.75rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:.4rem}
+.card-body{padding:1.125rem}
+.card-body.p0{padding:0}
 
-  /* Borders */
-  --b1: rgba(255,255,255,0.06);
-  --b2: rgba(255,255,255,0.10);
-  --b3: rgba(255,255,255,0.16);
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-box{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r16);padding:1.125rem;position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent)}
+.stat-icon{width:36px;height:36px;border-radius:var(--r8);display:grid;place-items:center;font-size:.9rem;margin-bottom:.625rem}
+.si-pink{background:var(--pink-10)}.si-cyan{background:var(--cyan-10)}.si-purple{background:var(--purple-10)}.si-green{background:var(--green-10)}.si-amber{background:var(--amber-10)}.si-orange{background:var(--orange-10)}
+.stat-val{font-family:'Syne',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-.04em;line-height:1}
+.sv-pink{color:var(--pink)}.sv-cyan{color:var(--cyan)}.sv-purple{color:var(--purple)}.sv-green{color:var(--green)}.sv-amber{color:var(--amber)}.sv-orange{color:var(--orange)}
+.stat-lbl{font-size:.688rem;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
+.stat-sub{font-size:.75rem;color:var(--t2);margin-top:.2rem}
 
-  /* Radius */
-  --r4:  4px;
-  --r8:  8px;
-  --r12: 12px;
-  --r16: 16px;
-  --r20: 20px;
-  --r24: 24px;
-  --rfull: 9999px;
+.table{width:100%;border-collapse:collapse}
+.table th{font-size:.688rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);padding:.625rem 1rem;border-bottom:1px solid var(--b1);text-align:left}
+.table td{padding:.75rem 1rem;border-bottom:1px solid var(--b1);font-size:.825rem;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:var(--s2)}
 
-  /* Shadows */
-  --sh-sm: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
-  --sh-md: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.3);
-  --sh-lg: 0 12px 32px rgba(0,0,0,.5), 0 4px 8px rgba(0,0,0,.3);
-  --sh-pink: 0 0 24px rgba(254,44,85,.25), 0 0 8px rgba(254,44,85,.15);
-  --sh-cyan: 0 0 24px rgba(37,244,238,.2), 0 0 8px rgba(37,244,238,.1);
-  --sh-green: 0 0 20px rgba(29,185,84,.25);
+.btn{display:inline-flex;align-items:center;gap:.375rem;padding:.5rem .875rem;border-radius:var(--r8);font-family:'IBM Plex Sans',sans-serif;font-size:.813rem;font-weight:500;cursor:pointer;transition:all .15s;border:none;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 3px 10px rgba(254,44,85,.22)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(254,44,85,.32)}
+.btn-ghost{background:var(--s3);color:var(--t2);border:1px solid var(--b1)}
+.btn-ghost:hover{background:var(--s4);color:var(--t1)}
+.btn-danger{background:var(--red-10);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-green{background:var(--green-10);color:var(--green);border:1px solid var(--green-20)}
+.btn-green:hover{background:var(--green-20)}
+.btn-sm{padding:.3rem .6rem;font-size:.75rem}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.btn:active{transform:scale(.97)}
 
-  /* Type scale */
-  --tx-xs:   0.688rem;
-  --tx-sm:   0.813rem;
-  --tx-base: 0.938rem;
-  --tx-lg:   1.063rem;
-  --tx-xl:   1.25rem;
-  --tx-2xl:  1.5rem;
-  --tx-3xl:  clamp(1.75rem, 3vw, 2.25rem);
-}
+.badge{display:inline-flex;align-items:center;padding:.15em .5em;border-radius:var(--r4);font-size:.65rem;font-weight:700;letter-spacing:.04em;white-space:nowrap}
+.badge-pink{background:var(--pink-10);color:var(--pink)}
+.badge-cyan{background:var(--cyan-10);color:var(--cyan)}
+.badge-green{background:var(--green-10);color:var(--green)}
+.badge-amber{background:var(--amber-10);color:var(--amber)}
+.badge-red{background:var(--red-10);color:var(--red)}
+.badge-purple{background:var(--purple-10);color:var(--purple)}
+.badge-gray{background:var(--s3);color:var(--t2)}
 
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'IBM Plex Sans', sans-serif;
-  background: var(--bg);
-  color: var(--t1);
-  min-height: 100vh;
-  overflow-x: hidden;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  scrollbar-width: thin;
-  scrollbar-color: var(--s4) transparent;
-}
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-thumb { background: var(--s4); border-radius: var(--rfull); }
+.toggle{width:36px;height:20px;border-radius:var(--rfull);background:var(--s4);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--pink)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s cubic-bezier(.16,1,.3,1);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.toggle.on::after{transform:translateX(16px)}
 
-/* === BACKGROUND === */
-.bg-layer {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 15% 0%, rgba(254,44,85,.09), transparent),
-    radial-gradient(ellipse 50% 40% at 85% 5%, rgba(37,244,238,.06), transparent),
-    radial-gradient(ellipse 40% 50% at 50% 100%, rgba(155,93,229,.07), transparent),
-    var(--bg);
-}
-.grid-layer {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: radial-gradient(ellipse at 50% 0%, black 40%, transparent 80%);
-}
+.input{width:100%;padding:.625rem .875rem;background:var(--s3);border:1px solid var(--b1);border-radius:var(--r8);color:var(--t1);font-family:'IBM Plex Sans',sans-serif;font-size:.825rem;outline:none;transition:border-color .15s,box-shadow .15s}
+.input:focus{border-color:var(--pink);box-shadow:0 0 0 2px rgba(254,44,85,.1)}
+.input::placeholder{color:var(--t3)}
+.input-sm{padding:.4rem .6rem;font-size:.75rem}
+select.input{cursor:pointer}
 
-/* === CONNECT SCREEN === */
-#connect-screen {
-  position: fixed; inset: 0; z-index: 999;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(9,9,11,.96);
-  backdrop-filter: blur(24px);
-}
-.connect-card {
-  width: min(440px, 92vw);
-  background: var(--s1);
-  border: 1px solid var(--b2);
-  border-radius: var(--r24);
-  padding: 2.5rem;
-  position: relative; overflow: hidden;
-  box-shadow: var(--sh-lg);
-  animation: cardIn .5s cubic-bezier(.16,1,.3,1) both;
-}
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(20px) scale(.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.connect-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--pink), var(--purple), var(--cyan));
-}
-.connect-glow {
-  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
-  width: 200px; height: 200px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(254,44,85,.12), transparent 70%);
-  pointer-events: none;
-}
-.connect-logo {
-  text-align: center; margin-bottom: .5rem;
-}
-.connect-logo-mark {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 56px; height: 56px; border-radius: var(--r16);
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  font-size: 1.6rem; margin-bottom: 1rem;
-  box-shadow: var(--sh-pink);
-}
-.connect-title {
-  font-family: 'Syne', sans-serif;
-  font-size: var(--tx-3xl); font-weight: 800;
-  letter-spacing: -.03em; line-height: 1.1;
-  background: linear-gradient(135deg, var(--t1) 40%, var(--t2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  margin-bottom: .35rem;
-}
-.connect-sub { font-size: var(--tx-sm); color: var(--t2); margin-bottom: 2rem; }
+.form-row{display:flex;gap:.625rem;margin-bottom:.75rem;align-items:flex-end}
+.form-group{display:flex;flex-direction:column;gap:.35rem;flex:1}
+.form-label{font-size:.688rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)}
 
-.field-label {
-  font-size: var(--tx-xs); font-weight: 600; letter-spacing: .09em;
-  text-transform: uppercase; color: var(--t3); margin-bottom: .5rem;
-  display: block;
-}
-.field-input {
-  width: 100%; padding: .75rem 1rem;
-  background: var(--s3); border: 1px solid var(--b1);
-  border-radius: var(--r12); color: var(--t1);
-  font-family: 'IBM Plex Sans', sans-serif; font-size: var(--tx-base);
-  outline: none; transition: border-color .15s, box-shadow .15s;
-  margin-bottom: 1rem;
-}
-.field-input:focus {
-  border-color: var(--pink);
-  box-shadow: 0 0 0 3px rgba(254,44,85,.12);
-}
-.field-input::placeholder { color: var(--t3); }
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r20);padding:1.75rem;width:min(500px,92vw);box-shadow:var(--sh-lg);animation:cardIn .3s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--cyan))}
+.modal-title{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;letter-spacing:-.02em;margin-bottom:1.25rem}
+.modal-footer{display:flex;justify-content:flex-end;gap:.5rem;margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--b1)}
 
-.btn-primary {
-  width: 100%; padding: .85rem;
-  background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
-  color: #fff; border: none; border-radius: var(--r12);
-  font-family: 'Syne', sans-serif; font-size: var(--tx-base); font-weight: 700;
-  letter-spacing: -.01em; cursor: pointer;
-  transition: all .2s cubic-bezier(.16,1,.3,1);
-  box-shadow: 0 4px 20px rgba(254,44,85,.3);
-  position: relative; overflow: hidden;
-}
-.btn-primary::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(rgba(255,255,255,.1), transparent);
-  border-radius: inherit;
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(254,44,85,.4); }
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+.empty{text-align:center;padding:3rem 1rem;color:var(--t3);font-size:.825rem;line-height:1.7}
+.empty-icon{font-size:2rem;opacity:.25;margin-bottom:.625rem}
 
-.connect-status { margin-top: 1rem; font-size: var(--tx-sm); color: var(--t2); min-height: 1.4rem; text-align: center; }
-.connect-status.error { color: var(--pink); }
-.connect-status.ok { color: var(--cyan); }
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeUp .25s cubic-bezier(.16,1,.3,1) both}
 
-/* === HEADER === */
-header {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .875rem 1.75rem;
-  background: rgba(9,9,11,.85);
-  backdrop-filter: blur(20px) saturate(1.5);
-  border-bottom: 1px solid var(--b1);
-}
-.header-logo {
-  display: flex; align-items: center; gap: .625rem;
-  font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800;
-  letter-spacing: -.02em;
-}
-.logo-dot {
-  width: 30px; height: 30px; border-radius: var(--r8);
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  display: grid; place-items: center; font-size: .8rem;
-  box-shadow: var(--sh-pink); flex-shrink: 0;
-}
-.logo-text .p { color: var(--pink); }
-.logo-text .c { color: var(--cyan); }
+/* ===== DASHBOARD PAGE ===== */
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.chat-feed{max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:.3rem}
+.cf-item{display:flex;align-items:flex-start;gap:.5rem;padding:.45rem .5rem;border-radius:var(--r8);transition:background .1s}
+.cf-item:hover{background:var(--s2)}
+.cf-avatar{width:24px;height:24px;border-radius:50%;background:var(--s4);display:grid;place-items:center;font-size:.58rem;font-weight:600;color:var(--cyan);flex-shrink:0;font-family:'IBM Plex Mono',monospace;border:1px solid var(--b1)}
+.cf-content{flex:1;min-width:0}
+.cf-user{font-size:.688rem;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:.25rem;margin-bottom:.08rem}
+.cf-text{font-size:.775rem;color:var(--t2);line-height:1.4;word-break:break-word}
+.cf-text.song{color:var(--pink);font-weight:600}
+.cf-time{font-size:.6rem;color:var(--t3);font-family:'IBM Plex Mono',monospace}
+.cf-sys{font-size:.75rem;color:var(--cyan);background:var(--cyan-10);border-left:2px solid var(--cyan);padding:.4rem .6rem;border-radius:var(--r4);animation:fadeUp .2s ease}
+.cf-gift{font-size:.75rem;color:var(--amber);background:var(--amber-10);border-left:2px solid var(--amber);padding:.4rem .6rem;border-radius:var(--r4)}
 
-.header-center {
-  display: flex; align-items: center; gap: .5rem;
-}
-.live-pill {
-  display: flex; align-items: center; gap: .35rem;
-  padding: .3rem .7rem; border-radius: var(--rfull);
-  background: var(--pink-10); border: 1px solid var(--pink-20);
-  font-size: var(--tx-xs); font-weight: 700; letter-spacing: .08em;
-  color: var(--pink); text-transform: uppercase;
-}
-.live-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--pink); box-shadow: 0 0 6px var(--pink);
-  animation: livePulse 1.5s ease-in-out infinite;
-}
-@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* ===== SONG REQUESTS PAGE ===== */
+.player-area{display:grid;grid-template-columns:280px 1fr;gap:1rem}
+.embed-wrap{border-radius:var(--r12);background:var(--s3);overflow:hidden;position:relative}
+.embed-wrap.yt{aspect-ratio:16/9}
+.embed-wrap.sp{height:152px}
+.embed-wrap.sc{height:166px}
+.embed-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:var(--r12)}
+.embed-idle{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;color:var(--t3);text-align:center;padding:1rem;font-size:.813rem}
+.embed-idle-icon{font-size:2rem;opacity:.25}
+.yt-thumb-layer{position:absolute;inset:0;display:none;cursor:pointer}
+.yt-thumb-layer img{width:100%;height:100%;object-fit:cover}
+.play-over{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.yt-thumb-layer:hover .play-over{background:rgba(0,0,0,.5)}
+.play-big{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--purple));display:grid;place-items:center;font-size:1.1rem;box-shadow:var(--sh-pink)}
+.np-meta{text-align:center;padding:.875rem 0 .75rem}
+.np-title{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:.2rem}
+.np-artist{font-size:.775rem;color:var(--t2)}
+.np-by{font-size:.688rem;color:var(--pink);margin-top:.2rem;font-family:'IBM Plex Mono',monospace}
+.prog-bar{width:100%;height:3px;background:var(--s4);border-radius:var(--rfull);margin-bottom:.375rem;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--purple));border-radius:var(--rfull);transition:width 1s linear}
+.prog-times{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--t3);margin-bottom:.75rem}
+.controls{display:flex;align-items:center;justify-content:center;gap:.5rem}
+.ctrl{background:var(--s3);border:1px solid var(--b1);color:var(--t2);border-radius:50%;cursor:pointer;display:grid;place-items:center;transition:all .15s;font-size:.8rem}
+.ctrl:hover{background:var(--s4);color:var(--t1);transform:scale(1.06)}
+.ctrl.sm{width:32px;height:32px}
+.ctrl.lg{width:44px;height:44px;font-size:.95rem;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border-color:transparent;box-shadow:var(--sh-pink)}
+.ctrl.lg:hover{transform:scale(1.08)}
+.ctrl.active{color:var(--cyan);border-color:rgba(37,244,238,.4)}
+.src-tabs{display:flex;gap:.3rem;padding:.5rem;background:var(--s2);border-radius:var(--r10);border:1px solid var(--b1);margin-bottom:.875rem}
+.stab{flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;padding:.45rem .5rem;border-radius:var(--r6);font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;border:none;background:none;color:var(--t3);font-family:'IBM Plex Sans',sans-serif}
+.stab:hover{color:var(--t2);background:var(--s3)}
+.stab.yt-on{background:var(--pink-10);color:var(--pink);border:1px solid var(--pink-20)}
+.stab.sp-on{background:var(--green-10);color:var(--green);border:1px solid var(--green-20)}
+.stab.sc-on{background:var(--orange-10);color:var(--orange);border:1px solid rgba(255,107,53,.2)}
+.qlist{display:flex;flex-direction:column;gap:.3rem;max-height:380px;overflow-y:auto}
+.qitem{display:flex;align-items:center;gap:.5rem;padding:.55rem .7rem;border-radius:var(--r10);background:var(--s2);border:1px solid var(--b1);cursor:pointer;transition:all .2s;animation:fadeUp .25s ease both}
+.qitem:hover{background:var(--s3);border-color:var(--b2);transform:translateX(3px)}
+.qnum{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--t3);min-width:14px}
+.qthumb{width:36px;height:36px;border-radius:var(--r6);background:var(--s4);overflow:hidden;flex-shrink:0;display:grid;place-items:center;font-size:.9rem}
+.qthumb img{width:100%;height:100%;object-fit:cover}
+.qmeta{flex:1;min-width:0}
+.qname{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qsub{font-size:.65rem;color:var(--t2)}
+.qs-badge{font-size:.58rem;padding:.1em .38em;border-radius:var(--r4);font-weight:700;flex-shrink:0}
+.qs-yt{background:var(--pink-10);color:var(--pink)}.qs-sp{background:var(--green-10);color:var(--green)}.qs-sc{background:var(--orange-10);color:var(--orange)}
+.qdel{background:none;border:none;color:var(--t3);cursor:pointer;padding:.2rem;border-radius:var(--r4);transition:all .15s;font-size:.7rem}
+.qdel:hover{color:var(--pink);background:var(--pink-10)}
 
-.viewers-pill {
-  display: flex; align-items: center; gap: .4rem;
-  padding: .3rem .75rem; border-radius: var(--rfull);
-  background: var(--s2); border: 1px solid var(--b1);
-  font-size: var(--tx-xs); color: var(--t2);
-}
-.viewers-pill svg { width: 12px; height: 12px; opacity: .6; }
+/* ===== MODERATION ===== */
+.mod-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.mod-rule{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.875rem 1.125rem;border-bottom:1px solid var(--b1)}
+.mod-rule:last-child{border-bottom:none}
+.mod-rule-info{flex:1}
+.mod-rule-title{font-size:.825rem;font-weight:600;margin-bottom:.2rem}
+.mod-rule-desc{font-size:.75rem;color:var(--t2);line-height:1.5}
+.mod-rule-controls{display:flex;align-items:center;gap:.625rem;flex-shrink:0}
+.range-input{-webkit-appearance:none;width:80px;height:4px;border-radius:var(--rfull);background:var(--s4);outline:none}
+.range-input::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--pink);cursor:pointer;box-shadow:0 0 8px rgba(254,44,85,.3)}
 
-.header-right { display: flex; align-items: center; gap: .5rem; }
-.connected-user { font-size: var(--tx-sm); color: var(--t2); font-family: 'IBM Plex Mono', monospace; }
-.btn-ghost {
-  padding: .35rem .75rem; border-radius: var(--r8);
-  background: var(--s3); border: 1px solid var(--b1);
-  color: var(--t2); font-size: var(--tx-xs); font-weight: 500;
-  cursor: pointer; transition: all .15s; font-family: 'IBM Plex Sans', sans-serif;
-  letter-spacing: .02em;
-}
-.btn-ghost:hover { background: var(--s4); color: var(--t1); border-color: var(--b2); }
+/* ===== LOGS ===== */
+.log-filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.log-filter{padding:.3rem .7rem;border-radius:var(--rfull);font-size:.725rem;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid var(--b1);background:var(--s2);color:var(--t2)}
+.log-filter.active{background:var(--pink-10);color:var(--pink);border-color:var(--pink-20)}
+.log-entry{display:flex;align-items:flex-start;gap:.625rem;padding:.6rem .875rem;border-bottom:1px solid var(--b1);transition:background .1s;font-size:.775rem}
+.log-entry:hover{background:var(--s2)}
+.log-icon{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.65rem;flex-shrink:0;margin-top:.1rem}
+.log-type-chat{background:var(--cyan-10)}
+.log-type-command{background:var(--purple-10)}
+.log-type-mod{background:var(--red-10)}
+.log-type-gift{background:var(--amber-10)}
+.log-type-system{background:var(--s3)}
+.log-type-timer{background:var(--green-10)}
+.log-time{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--t3);flex-shrink:0;margin-top:.15rem}
+.log-text{flex:1;color:var(--t2);line-height:1.4}
+.log-text .user{color:var(--t1);font-weight:600}
 
-/* === MAIN LAYOUT === */
-.app-body { position: relative; z-index: 1; }
-main {
-  display: grid;
-  grid-template-columns: 320px 1fr 280px;
-  grid-template-rows: 1fr;
-  gap: 1.25rem;
-  padding: 1.25rem 1.75rem;
-  max-width: 1480px;
-  margin: 0 auto;
-  min-height: calc(100vh - 57px);
-}
+/* ===== GIVEAWAY ===== */
+.gw-card{border-color:var(--amber-10);background:linear-gradient(160deg,rgba(245,158,11,.04),var(--s1) 60%)}
+.gw-active-badge{display:flex;align-items:center;gap:.35rem;padding:.3rem .7rem;background:var(--green-10);border:1px solid var(--green-20);border-radius:var(--rfull);font-size:.68rem;font-weight:700;color:var(--green)}
+.entry-counter{font-family:'Syne',sans-serif;font-size:3rem;font-weight:800;color:var(--amber);letter-spacing:-.04em;line-height:1;text-align:center;padding:1.5rem 0}
+.winner-reveal{padding:1.5rem;text-align:center;background:linear-gradient(135deg,rgba(254,44,85,.08),rgba(155,93,229,.08));border-radius:var(--r12);border:1px solid var(--pink-20)}
+.winner-name{font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;color:var(--pink);letter-spacing:-.03em;margin-bottom:.35rem}
 
-/* === CARD BASE === */
-.card {
-  background: var(--s1);
-  border: 1px solid var(--b1);
-  border-radius: var(--r20);
-  position: relative; overflow: hidden;
-}
-.card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent);
-  pointer-events: none;
-}
-.card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .875rem 1.125rem;
-  border-bottom: 1px solid var(--b1);
-}
-.card-label {
-  font-size: var(--tx-xs); font-weight: 600; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--t3);
-  display: flex; align-items: center; gap: .4rem;
-}
-.card-label .icon { font-size: .85rem; }
-.card-body { padding: 1.125rem; }
-.card-body.tight { padding: .625rem; }
-
-/* === LEFT COL: PLAYER === */
-.left-col { display: flex; flex-direction: column; gap: 1rem; }
-
-/* Source tabs */
-.source-tabs {
-  display: flex; gap: .375rem;
-  padding: .625rem;
-  background: var(--s2); border-radius: var(--r12);
-  border: 1px solid var(--b1);
-}
-.stab {
-  flex: 1; display: flex; align-items: center; justify-content: center; gap: .4rem;
-  padding: .5rem .6rem; border-radius: var(--r8);
-  font-size: var(--tx-xs); font-weight: 600; letter-spacing: .04em;
-  cursor: pointer; transition: all .2s cubic-bezier(.16,1,.3,1);
-  border: 1px solid transparent; background: none; color: var(--t3);
-  font-family: 'IBM Plex Sans', sans-serif;
-}
-.stab:hover { color: var(--t2); background: var(--s3); }
-.stab.active-yt  { background: var(--pink-10); border-color: var(--pink-20); color: var(--pink); box-shadow: var(--sh-pink); }
-.stab.active-sp  { background: var(--green-10); border-color: var(--green-20); color: var(--green); box-shadow: var(--sh-green); }
-.stab.active-sc  { background: var(--orange-10); border-color: var(--orange-20); color: var(--orange); box-shadow: 0 0 20px rgba(255,107,53,.2); }
-.stab-icon { font-size: 1rem; }
-
-/* Player card */
-.player-card {
-  border-color: var(--pink-20);
-  background: linear-gradient(160deg, rgba(254,44,85,.05) 0%, var(--s1) 50%);
-}
-
-/* Embed container */
-.embed-wrap {
-  width: 100%; border-radius: var(--r12);
-  background: var(--s3); overflow: hidden;
-  position: relative;
-}
-/* YouTube: 16/9 */
-.embed-wrap.yt-mode { aspect-ratio: 16/9; }
-/* Spotify: fixed height */
-.embed-wrap.sp-mode { height: 152px; }
-/* SoundCloud: fixed height */
-.embed-wrap.sc-mode { height: 166px; }
-
-.embed-wrap iframe {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%; border: none;
-  border-radius: var(--r12);
-}
-/* Idle state */
-.embed-idle {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: .625rem; color: var(--t3);
-}
-.embed-idle-icon { font-size: 2.5rem; opacity: .3; }
-.embed-idle-text { font-size: var(--tx-sm); line-height: 1.5; text-align: center; }
-.embed-idle-text strong { color: var(--cyan); }
-
-/* Thumb + overlay for YouTube before play */
-.yt-thumb-layer {
-  position: absolute; inset: 0;
-  display: none; cursor: pointer;
-}
-.yt-thumb-layer img { width: 100%; height: 100%; object-fit: cover; }
-.yt-thumb-layer .play-over {
-  position: absolute; inset: 0; background: rgba(0,0,0,.35);
-  display: flex; align-items: center; justify-content: center;
-  transition: background .2s;
-}
-.yt-thumb-layer:hover .play-over { background: rgba(0,0,0,.5); }
-.play-btn-big {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  display: grid; place-items: center; font-size: 1.2rem;
-  box-shadow: var(--sh-pink); transition: transform .15s;
-}
-.yt-thumb-layer:hover .play-btn-big { transform: scale(1.08); }
-
-/* Song meta */
-.song-meta { text-align: center; margin: .875rem 0 .75rem; }
-.song-title {
-  font-family: 'Syne', sans-serif;
-  font-size: var(--tx-lg); font-weight: 700; letter-spacing: -.02em;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: .2rem;
-}
-.song-artist { font-size: var(--tx-sm); color: var(--t2); }
-.song-by {
-  font-size: var(--tx-xs); color: var(--pink);
-  margin-top: .25rem; font-family: 'IBM Plex Mono', monospace;
-}
-
-/* Progress (YT only) */
-.prog-wrap { margin-bottom: .75rem; }
-.prog-bar {
-  width: 100%; height: 3px; background: var(--s4);
-  border-radius: var(--rfull); overflow: hidden; cursor: pointer;
-  margin-bottom: .375rem;
-}
-.prog-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--pink), var(--purple));
-  border-radius: var(--rfull); transition: width 1s linear;
-}
-.prog-times {
-  display: flex; justify-content: space-between;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: var(--tx-xs); color: var(--t3);
-}
-
-/* Controls */
-.controls {
-  display: flex; align-items: center; justify-content: center; gap: .625rem;
-  margin-bottom: .25rem;
-}
-.ctrl {
-  background: var(--s3); border: 1px solid var(--b1);
-  color: var(--t2); border-radius: 50%; cursor: pointer;
-  display: grid; place-items: center; transition: all .15s ease;
-  font-size: .85rem;
-}
-.ctrl:hover { background: var(--s4); color: var(--t1); transform: scale(1.06); }
-.ctrl:active { transform: scale(.96); }
-.ctrl.sm { width: 34px; height: 34px; }
-.ctrl.md { width: 42px; height: 42px; font-size: .95rem; }
-.ctrl.lg {
-  width: 50px; height: 50px; font-size: 1.05rem;
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  color: #fff; border-color: transparent;
-  box-shadow: var(--sh-pink);
-}
-.ctrl.lg:hover { transform: scale(1.08); box-shadow: 0 0 32px rgba(254,44,85,.4); }
-.ctrl.active { color: var(--cyan); border-color: rgba(37,244,238,.4); }
-
-/* === QUEUE === */
-.qlist {
-  display: flex; flex-direction: column; gap: .375rem;
-  max-height: 320px; overflow-y: auto; padding-right: 2px;
-}
-.qitem {
-  display: flex; align-items: center; gap: .625rem;
-  padding: .625rem .75rem;
-  border-radius: var(--r12); background: var(--s2);
-  border: 1px solid var(--b1); cursor: pointer;
-  transition: all .2s cubic-bezier(.16,1,.3,1);
-  animation: itemIn .3s cubic-bezier(.16,1,.3,1) both;
-}
-@keyframes itemIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
-.qitem:hover { background: var(--s3); border-color: var(--b2); transform: translateX(3px); }
-.qnum { font-family: 'IBM Plex Mono', monospace; font-size: var(--tx-xs); color: var(--t3); min-width: 14px; text-align: center; }
-.qthumb {
-  width: 40px; height: 40px; border-radius: var(--r8);
-  background: var(--s4); overflow: hidden; flex-shrink: 0;
-  display: grid; place-items: center; font-size: 1rem;
-}
-.qthumb img { width: 100%; height: 100%; object-fit: cover; }
-.qmeta { flex: 1; min-width: 0; }
-.qname { font-size: var(--tx-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
-.qsub { font-size: var(--tx-xs); color: var(--t2); margin-top: .1rem; }
-.qsource {
-  font-size: .6rem; padding: .12em .4em; border-radius: var(--r4);
-  font-weight: 600; letter-spacing: .04em; flex-shrink: 0;
-}
-.qsource.yt { background: var(--pink-10); color: var(--pink); }
-.qsource.sp { background: var(--green-10); color: var(--green); }
-.qsource.sc { background: var(--orange-10); color: var(--orange); }
-.qdel {
-  background: none; border: none; color: var(--t3);
-  cursor: pointer; padding: .25rem; border-radius: var(--r4);
-  transition: all .15s; font-size: .75rem; flex-shrink: 0;
-  display: grid; place-items: center;
-}
-.qdel:hover { color: var(--pink); background: var(--pink-10); }
-
-.empty-state {
-  text-align: center; padding: 2rem 1rem;
-  color: var(--t3); font-size: var(--tx-sm); line-height: 1.7;
-}
-.empty-state .big { font-size: 2rem; margin-bottom: .5rem; opacity: .3; }
-.empty-state strong { color: var(--cyan); font-family: 'IBM Plex Mono', monospace; }
-
-/* === MIDDLE: CHAT === */
-.mid-col { display: flex; flex-direction: column; gap: 1rem; }
-
-/* Manual request form */
-.req-card {
-  background: var(--s2); border: 1px solid var(--b1);
-  border-radius: var(--r20); padding: 1.125rem;
-  position: relative; overflow: hidden;
-}
-.req-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--pink), var(--purple), var(--cyan));
-}
-.req-title {
-  font-family: 'Syne', sans-serif;
-  font-size: var(--tx-base); font-weight: 700; letter-spacing: -.02em;
-  margin-bottom: .875rem;
-  display: flex; align-items: center; gap: .5rem;
-}
-.req-row { display: flex; gap: .5rem; margin-bottom: .625rem; align-items: center; }
-.req-input {
-  flex: 1; padding: .6rem .9rem;
-  background: var(--s3); border: 1px solid var(--b1);
-  border-radius: var(--r8); color: var(--t1);
-  font-family: 'IBM Plex Sans', sans-serif; font-size: var(--tx-sm);
-  outline: none; transition: border-color .15s, box-shadow .15s;
-}
-.req-input:focus { border-color: var(--pink); box-shadow: 0 0 0 2px rgba(254,44,85,.1); }
-.req-input::placeholder { color: var(--t3); }
-
-/* Source selector in form */
-.src-select {
-  display: flex; gap: .3rem; align-items: center;
-  background: var(--s3); border: 1px solid var(--b1);
-  border-radius: var(--r8); padding: .3rem;
-}
-.src-opt {
-  padding: .3rem .55rem; border-radius: var(--r4);
-  font-size: var(--tx-xs); font-weight: 600; cursor: pointer;
-  transition: all .15s; border: none; background: none;
-  font-family: 'IBM Plex Sans', sans-serif; color: var(--t3);
-}
-.src-opt:hover { color: var(--t2); }
-.src-opt.sel-yt { background: var(--pink-10); color: var(--pink); }
-.src-opt.sel-sp { background: var(--green-10); color: var(--green); }
-.src-opt.sel-sc { background: var(--orange-10); color: var(--orange); }
-
-.btn-add {
-  display: inline-flex; align-items: center; gap: .35rem;
-  padding: .6rem 1.1rem; border-radius: var(--r8);
-  background: linear-gradient(135deg, var(--pink), var(--purple));
-  color: #fff; border: none; cursor: pointer;
-  font-family: 'Syne', sans-serif; font-size: var(--tx-sm); font-weight: 700;
-  transition: all .15s; white-space: nowrap;
-  box-shadow: 0 3px 10px rgba(254,44,85,.25);
-}
-.btn-add:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(254,44,85,.35); }
-.btn-add:active { transform: translateY(0); }
-.btn-add:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-
-/* AI response */
-.ai-bubble {
-  display: none; margin-top: .625rem;
-  background: var(--s3); border: 1px solid var(--purple-10);
-  border-left: 3px solid var(--purple); border-radius: var(--r8);
-  padding: .75rem 1rem; font-size: var(--tx-sm); color: var(--t2); line-height: 1.6;
-}
-.ai-bubble.on { display: block; animation: itemIn .25s ease; }
-.ai-tag { font-size: var(--tx-xs); font-weight: 600; color: var(--purple); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .3rem; }
-.ai-typing::after { content: '▋'; animation: blink .7s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-/* Chat stream */
-.chat-card { flex: 1; display: flex; flex-direction: column; }
-.msgs-wrap {
-  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
-  gap: .375rem; max-height: 500px; padding: .25rem;
-}
-.msg { display: flex; align-items: flex-start; gap: .5rem; animation: msgIn .2s ease both; }
-@keyframes msgIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
-.mavatar {
-  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--s4), var(--s5));
-  display: grid; place-items: center;
-  font-family: 'IBM Plex Mono', monospace; font-size: .6rem; font-weight: 500;
-  color: var(--cyan); border: 1px solid var(--b1);
-}
-.mcont { flex: 1; min-width: 0; }
-.mhead { display: flex; align-items: center; gap: .3rem; margin-bottom: .1rem; flex-wrap: wrap; }
-.muser { font-size: var(--tx-xs); font-weight: 600; color: var(--t2); }
-.mbadge {
-  font-size: .58rem; padding: .08em .38em; border-radius: var(--r4);
-  font-weight: 700; letter-spacing: .04em;
-}
-.mbadge.song { background: var(--pink-10); color: var(--pink); }
-.mbadge.mod  { background: var(--cyan-10); color: var(--cyan); }
-.mbadge.sub  { background: var(--purple-10); color: var(--purple); }
-.mtext { font-size: var(--tx-sm); color: var(--t2); line-height: 1.45; word-break: break-word; }
-.mtext .sreq { color: var(--pink); font-weight: 600; }
-.mtime { font-size: .62rem; color: var(--t3); margin-top: .08rem; font-family: 'IBM Plex Mono', monospace; }
-
-.msg.sys .mtext {
-  font-size: var(--tx-xs); color: var(--cyan);
-  background: var(--cyan-10); border-left: 2px solid var(--cyan);
-  border-radius: var(--r4); padding: .45rem .65rem; line-height: 1.5;
-}
-.msg.gift .mtext { color: #fbbf24; background: rgba(251,191,36,.08); border-left: 2px solid #fbbf24; border-radius: var(--r4); padding: .45rem .65rem; }
-.msg.err .mtext  { color: var(--pink); background: var(--pink-10); border-left: 2px solid var(--pink); border-radius: var(--r4); padding: .45rem .65rem; }
-
-/* === RIGHT COL: STATS + COMMANDS === */
-.right-col { display: flex; flex-direction: column; gap: 1rem; }
-
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .625rem; }
-.stat-tile {
-  background: var(--s1); border: 1px solid var(--b1);
-  border-radius: var(--r16); padding: .875rem;
-  position: relative; overflow: hidden;
-}
-.stat-tile::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent);
-}
-.stat-icon {
-  width: 36px; height: 36px; border-radius: var(--r8);
-  display: grid; place-items: center; font-size: .95rem;
-  margin-bottom: .5rem;
-}
-.stat-icon.pk { background: var(--pink-10); }
-.stat-icon.cy { background: var(--cyan-10); }
-.stat-icon.pu { background: var(--purple-10); }
-.stat-icon.gr { background: rgba(34,197,94,.1); }
-.stat-val {
-  font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800;
-  letter-spacing: -.03em; line-height: 1;
-}
-.stat-val.pk { color: var(--pink); }
-.stat-val.cy { color: var(--cyan); }
-.stat-val.pu { color: var(--purple); }
-.stat-val.gr { color: #22c55e; }
-.stat-lbl { font-size: var(--tx-xs); color: var(--t3); text-transform: uppercase; letter-spacing: .08em; margin-top: .2rem; }
-
-/* Commands */
-.cmd-list { display: flex; flex-direction: column; gap: .375rem; padding: .875rem 1.125rem; }
-.cmd-row { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
-.cmd-tag {
-  font-family: 'IBM Plex Mono', monospace; font-size: var(--tx-xs);
-  color: var(--cyan); background: var(--cyan-10);
-  padding: .18em .5em; border-radius: var(--r4); white-space: nowrap;
-}
-.cmd-desc { font-size: var(--tx-xs); color: var(--t2); text-align: right; }
-
-/* Toggles */
-.tog-section { border-top: 1px solid var(--b1); }
-.tog-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: .65rem 1.125rem; border-bottom: 1px solid var(--b1);
-}
-.tog-row:last-child { border-bottom: none; }
-.tog-lbl { font-size: var(--tx-sm); color: var(--t2); }
-.toggle {
-  width: 36px; height: 20px; border-radius: var(--rfull);
-  background: var(--s4); border: none; cursor: pointer;
-  position: relative; transition: background .2s; flex-shrink: 0;
-}
-.toggle.on { background: var(--pink); }
-.toggle::after {
-  content: ''; position: absolute; top: 2px; left: 2px;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: #fff; transition: transform .2s cubic-bezier(.16,1,.3,1);
-  box-shadow: 0 1px 3px rgba(0,0,0,.3);
-}
-.toggle.on::after { transform: translateX(16px); }
-
-/* Searching animation */
-.searching-msg {
-  display: flex; align-items: center; gap: .4rem;
-  font-size: var(--tx-xs); color: var(--cyan);
-  padding: .4rem .65rem; background: var(--cyan-10);
-  border-radius: var(--r4); animation: msgIn .2s ease;
-}
-.spin { animation: spinner .7s linear infinite; display: inline-block; }
-@keyframes spinner { to { transform: rotate(360deg); } }
-
-@media (max-width: 1100px) { main { grid-template-columns: 290px 1fr; } .right-col { display: none; } }
-@media (max-width: 700px) { main { grid-template-columns: 1fr; padding: .875rem; } header { padding: .75rem 1rem; } }
+/* RESPONSIVE */
+@media(max-width:900px){.sidebar{transform:translateX(-100%)}.main-wrap{margin-left:0}.dashboard-grid{grid-template-columns:1fr}.player-area{grid-template-columns:1fr}.mod-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="bg-layer"></div>
-<div class="grid-layer"></div>
 
 <!-- ===== CONNECT SCREEN ===== -->
 <div id="connect-screen">
   <div class="connect-card">
-    <div class="connect-glow"></div>
-    <div class="connect-logo">
-      <div class="connect-logo-mark">🎵</div>
-      <div class="connect-title">Music Bot</div>
-      <div class="connect-sub">Conectate al live de cualquier streamer de TikTok</div>
+    <div class="cc-logo">
+      <div class="cc-icon">🎵</div>
+      <div class="cc-title">TikBot</div>
+      <div class="cc-sub">Panel de control para TikTok Live</div>
     </div>
-    <label class="field-label">Usuario de TikTok</label>
-    <input class="field-input" id="input-username" placeholder="@nombre_streamer" autocomplete="off" spellcheck="false">
-    <button class="btn-primary" id="btn-connect" onclick="connectToLive()">
-      Conectar al Live &nbsp;🔴
-    </button>
-    <div class="connect-status" id="connect-status"></div>
+    <label class="field-lbl">Usuario de TikTok</label>
+    <input class="field-inp" id="inp-user" placeholder="@nombre_streamer" autocomplete="off" spellcheck="false">
+    <button class="btn-connect" id="btn-conn" onclick="connectToLive()">Conectar al Live 🔴</button>
+    <div class="conn-status" id="conn-status"></div>
   </div>
 </div>
 
 <!-- ===== APP ===== -->
-<div class="app-body" id="main-app" style="display:none">
-  <header>
-    <div class="header-logo">
-      <div class="logo-dot">🎵</div>
-      <div class="logo-text"><span class="p">TIK</span><span class="c">BOT</span></div>
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">🎵</div>
+      <div class="sb-logo-txt"><span class="p">TIK</span><span class="c">BOT</span></div>
     </div>
-    <div class="header-center">
-      <div class="live-pill"><div class="live-dot"></div>LIVE</div>
-      <div class="viewers-pill">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-        <span id="viewer-count">—</span>
-      </div>
+    <div class="sb-section">
+      <div class="sb-label">Principal</div>
+      <button class="sb-item active" onclick="nav('dashboard')"><span class="sb-icon">🏠</span> Dashboard</button>
+      <button class="sb-item" onclick="nav('songreqs')"><span class="sb-icon">🎵</span> Song Requests <span class="sb-badge" id="sb-queue-count" style="display:none">0</span></button>
+
+      <div class="sb-label">Herramientas</div>
+      <button class="sb-item" onclick="nav('commands')"><span class="sb-icon">⌘</span> Commands</button>
+      <button class="sb-item" onclick="nav('timers')"><span class="sb-icon">⏱</span> Timers</button>
+      <button class="sb-item" onclick="nav('giveaways')"><span class="sb-icon">🎁</span> Giveaways</button>
+
+      <div class="sb-label">Gestión</div>
+      <button class="sb-item" onclick="nav('regulars')"><span class="sb-icon">⭐</span> Regulars</button>
+      <button class="sb-item" onclick="nav('moderation')"><span class="sb-icon">🛡</span> Moderación</button>
+      <button class="sb-item" onclick="nav('logs')"><span class="sb-icon">📋</span> Logs <span class="sb-badge" id="sb-log-badge" style="display:none">!</span></button>
     </div>
-    <div class="header-right">
-      <span class="connected-user" id="connected-user"></span>
-      <button class="btn-ghost" onclick="disconnectLive()">Desconectar</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- ===== LEFT: PLAYER ===== -->
-    <div class="left-col">
-
-      <!-- Source tabs -->
-      <div class="source-tabs" id="source-tabs">
-        <button class="stab active-yt" data-src="yt" onclick="setSource('yt')">
-          <span class="stab-icon">▶️</span> YouTube
-        </button>
-        <button class="stab" data-src="sp" onclick="setSource('sp')">
-          <span class="stab-icon">🟢</span> Spotify
-        </button>
-        <button class="stab" data-src="sc" onclick="setSource('sc')">
-          <span class="stab-icon">🟠</span> SoundCloud
-        </button>
+    <div class="sb-bottom">
+      <div class="live-indicator" id="live-indicator" style="display:none">
+        <div class="live-dot"></div>
+        <span class="live-text">Live</span>
+        <span class="live-viewers" id="sb-viewers">—</span>
       </div>
-
-      <!-- Player card -->
-      <div class="card player-card">
-        <div class="card-head">
-          <div class="card-label"><span class="icon">▶</span> REPRODUCIENDO</div>
-          <span id="np-status" style="font-size:.68rem;color:var(--pink);font-weight:600;letter-spacing:.06em">EN ESPERA</span>
-        </div>
-        <div class="card-body">
-
-          <!-- Embed area — changes based on source -->
-          <div class="embed-wrap yt-mode" id="embed-wrap">
-            <div class="embed-idle" id="embed-idle">
-              <div class="embed-idle-icon">🎵</div>
-              <div class="embed-idle-text">Esperando canciones…<br>Los viewers piden con <strong>!sr</strong></div>
-            </div>
-            <div class="yt-thumb-layer" id="yt-thumb-layer" onclick="startYTPlayback()">
-              <img id="yt-thumb-img" src="" alt="">
-              <div class="play-over"><div class="play-btn-big">▶</div></div>
-            </div>
-            <div id="yt-iframe-container" style="position:absolute;inset:0;display:none"></div>
-            <div id="embed-iframe-wrap" style="position:absolute;inset:0;display:none"></div>
-          </div>
-
-          <!-- Song meta -->
-          <div class="song-meta">
-            <div class="song-title" id="np-title">Esperando canciones…</div>
-            <div class="song-artist" id="np-artist">—</div>
-            <div class="song-by" id="np-by"></div>
-          </div>
-
-          <!-- Progress (YouTube only) -->
-          <div class="prog-wrap" id="prog-wrap">
-            <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-            <div class="prog-times"><span id="cur-time">0:00</span><span id="tot-time">0:00</span></div>
-          </div>
-
-          <!-- Controls -->
-          <div class="controls">
-            <button class="ctrl sm" onclick="prevSong()" title="Anterior">⏮</button>
-            <button class="ctrl sm" id="btn-shuf" onclick="toggleShuffle()" title="Aleatorio">🔀</button>
-            <button class="ctrl lg" id="btn-play" onclick="togglePlay()">▶</button>
-            <button class="ctrl sm" id="btn-rep" onclick="toggleRepeat()" title="Repetir">🔁</button>
-            <button class="ctrl sm" onclick="nextSong()" title="Siguiente">⏭</button>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Queue -->
-      <div class="card" style="flex:1">
-        <div class="card-head">
-          <div class="card-label"><span class="icon">📋</span> COLA</div>
-          <span id="qcount" style="font-size:.68rem;color:var(--t3)">0 canciones</span>
-        </div>
-        <div class="card-body tight">
-          <div class="qlist" id="qlist">
-            <div class="empty-state">
-              <div class="big">🎵</div>
-              Cola vacía — los viewers piden con <strong>!sr</strong>
-            </div>
-          </div>
-        </div>
+      <div class="sb-user">
+        <div class="sb-avatar" id="sb-avatar">?</div>
+        <span class="sb-username" id="sb-username">Sin conectar</span>
+        <button class="sb-disc-btn" onclick="disconnectLive()" title="Desconectar">✕</button>
       </div>
     </div>
+  </aside>
 
-    <!-- ===== MIDDLE: CHAT ===== -->
-    <div class="mid-col">
-
-      <!-- Manual request -->
-      <div class="req-card">
-        <div class="req-title">🎤 Agregar canción manualmente</div>
-        <div class="req-row">
-          <input class="req-input" id="req-user" placeholder="@usuario" style="max-width:130px">
-          <input class="req-input" id="req-song" placeholder="Canción o artista…">
-        </div>
-        <div class="req-row">
-          <div class="src-select">
-            <button class="src-opt sel-yt" data-src="yt" onclick="setReqSource('yt')">YT</button>
-            <button class="src-opt" data-src="sp" onclick="setReqSource('sp')">SP</button>
-            <button class="src-opt" data-src="sc" onclick="setReqSource('sc')">SC</button>
-          </div>
-          <div style="flex:1"></div>
-          <button class="btn-add" id="btn-add" onclick="manualRequest()">+ Agregar</button>
-        </div>
-        <div class="ai-bubble" id="ai-bubble">
-          <div class="ai-tag">✦ IA</div>
-          <span id="ai-text"></span>
-        </div>
-      </div>
-
-      <!-- Live chat -->
-      <div class="card chat-card">
-        <div class="card-head">
-          <div class="card-label"><span class="icon">💬</span> CHAT EN VIVO</div>
-          <button class="btn-ghost" onclick="clearChat()" style="font-size:.68rem;padding:.2rem .55rem">Limpiar</button>
-        </div>
-        <div class="card-body" style="padding:.625rem;flex:1">
-          <div class="msgs-wrap" id="msgs"></div>
-        </div>
-      </div>
+  <!-- MAIN -->
+  <div class="main-wrap">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="topbar-right" id="topbar-actions"></div>
     </div>
+    <div class="page-content" id="page-content"></div>
+  </div>
+</div>
 
-    <!-- ===== RIGHT: STATS ===== -->
-    <div class="right-col">
-      <div class="stats-grid">
-        <div class="stat-tile"><div class="stat-icon pk">🎵</div><div class="stat-val pk" id="st-req">0</div><div class="stat-lbl">Pedidas</div></div>
-        <div class="stat-tile"><div class="stat-icon cy">▶</div><div class="stat-val cy" id="st-play">0</div><div class="stat-lbl">Tocadas</div></div>
-        <div class="stat-tile"><div class="stat-icon pu">👥</div><div class="stat-val pu" id="st-view">—</div><div class="stat-lbl">Viewers</div></div>
-        <div class="stat-tile"><div class="stat-icon gr">⏱</div><div class="stat-val gr" id="st-time">0:00</div><div class="stat-lbl">En vivo</div></div>
-      </div>
-
-      <div class="card">
-        <div class="card-head"><div class="card-label"><span class="icon">⌘</span> COMANDOS</div></div>
-        <div class="cmd-list">
-          <div class="cmd-row"><span class="cmd-tag">!sr [canción]</span><span class="cmd-desc">Pedir</span></div>
-          <div class="cmd-row"><span class="cmd-tag">!pedir [canción]</span><span class="cmd-desc">En español</span></div>
-          <div class="cmd-row"><span class="cmd-tag">!skip</span><span class="cmd-desc">Saltar (mod)</span></div>
-          <div class="cmd-row"><span class="cmd-tag">!queue / !cola</span><span class="cmd-desc">Ver lista</span></div>
-          <div class="cmd-row"><span class="cmd-tag">!np</span><span class="cmd-desc">Qué suena</span></div>
-        </div>
-        <div class="tog-section">
-          <div class="tog-row"><span class="tog-lbl">Requests activos</span><button class="toggle on" id="tog-req" onclick="toggleRequests()"></button></div>
-          <div class="tog-row"><span class="tog-lbl">Solo subs</span><button class="toggle" id="tog-subs" onclick="toggleSubs()"></button></div>
-          <div class="tog-row"><span class="tog-lbl">Auto-play</span><button class="toggle on" id="tog-auto" onclick="toggleAutoplay()"></button></div>
-        </div>
-      </div>
-    </div>
-  </main>
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Modal</div>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
-// ===== STATE =====
+// ============================================================
+// STATE
+// ============================================================
 let ws = null;
-let queue = [];
-let nowPlaying = null;
+let connectedUser = '';
+let currentPage = 'dashboard';
+let stats = { req:0, play:0, commands:0, mods:0 };
+let liveStats = { viewers:0, liveSecs:0 };
+let liveTimer = null, progTimer = null;
+
+// Song Requests state
+let queue = [], nowPlaying = null;
 let ytPlayer = null, ytReady = false;
 let isPlaying = false, isShuffle = false, isRepeat = false, autoPlay = true;
-let requestsOpen = true, subsOnly = false;
-let currentSource = 'yt'; // yt | sp | sc
-let reqSource = 'yt';
-let stats = { req: 0, play: 0 };
-let liveSecs = 0, liveTimer = null, progTimer = null;
-let pendingReqs = {};
-let reqCounter = 0;
+let currentSrc = 'yt', reqSrc = 'yt';
+let pendingReqs = {}, reqCounter = 0;
 
-// ===== YT API =====
+// ============================================================
+// YOUTUBE API
+// ============================================================
 function onYouTubeIframeAPIReady() { ytReady = true; }
 
 function createYTPlayer(videoId) {
   const wrap = document.getElementById('yt-iframe-container');
-  wrap.innerHTML = '';
-  const div = document.createElement('div');
-  div.id = 'yt-player-el';
-  wrap.appendChild(div);
-  wrap.style.display = 'block';
+  if (!wrap) return;
+  wrap.innerHTML = ''; const d = document.createElement('div'); d.id='yt-player-el'; wrap.appendChild(d); wrap.style.display='block';
   document.getElementById('yt-thumb-layer').style.display = 'none';
-
-  ytPlayer = new YT.Player('yt-player-el', {
-    videoId,
-    playerVars: { autoplay: 1, controls: 1, rel: 0, modestbranding: 1 },
-    events: {
-      onReady: e => { e.target.playVideo(); isPlaying = true; document.getElementById('btn-play').textContent = '⏸'; },
-      onStateChange: e => {
-        if (e.data === YT.PlayerState.ENDED) { clearInterval(progTimer); if (isRepeat && nowPlaying) { createYTPlayer(nowPlaying.videoId); return; } nextSong(); }
-        if (e.data === YT.PlayerState.PLAYING) { isPlaying = true; document.getElementById('btn-play').textContent = '⏸'; startProgTimer(); }
-        if (e.data === YT.PlayerState.PAUSED)  { isPlaying = false; document.getElementById('btn-play').textContent = '▶'; }
-      },
-      onError: () => { sysMsg('⚠️ Este video no se puede reproducir. Saltando…'); nextSong(); }
-    }
-  });
+  ytPlayer = new YT.Player('yt-player-el', { videoId, playerVars:{autoplay:1,controls:1,rel:0,modestbranding:1}, events:{
+    onReady: e => { e.target.playVideo(); isPlaying=true; setPlayBtn(false); },
+    onStateChange: e => {
+      if (e.data===YT.PlayerState.ENDED) { clearInterval(progTimer); if(isRepeat&&nowPlaying){createYTPlayer(nowPlaying.videoId);return;} nextSong(); }
+      if (e.data===YT.PlayerState.PLAYING) { isPlaying=true; setPlayBtn(false); startProgTimer(); }
+      if (e.data===YT.PlayerState.PAUSED)  { isPlaying=false; setPlayBtn(true); }
+    },
+    onError: () => { sysMsg('⚠️ Video no embeddable. Saltando…'); nextSong(); }
+  }});
 }
-
-function startYTPlayback() {
-  if (!nowPlaying || nowPlaying.source !== 'yt') return;
-  document.getElementById('yt-thumb-layer').style.display = 'none';
-  createYTPlayer(nowPlaying.videoId);
-}
-
+function setPlayBtn(paused) { const b=document.getElementById('btn-play'); if(b) b.textContent=paused?'▶':'⏸'; }
+function startYTPlayback() { if(!nowPlaying||nowPlaying.src!=='yt') return; document.getElementById('yt-thumb-layer').style.display='none'; createYTPlayer(nowPlaying.videoId); }
 function startProgTimer() {
   clearInterval(progTimer);
   progTimer = setInterval(() => {
-    if (!ytPlayer?.getCurrentTime) return;
-    try {
-      const c = Math.floor(ytPlayer.getCurrentTime());
-      const t = Math.floor(ytPlayer.getDuration()) || 1;
-      document.getElementById('prog-fill').style.width = Math.round(c/t*100) + '%';
-      document.getElementById('cur-time').textContent = fmt(c);
-      document.getElementById('tot-time').textContent = fmt(t);
-    } catch {}
+    if(!ytPlayer?.getCurrentTime) return;
+    try { const c=Math.floor(ytPlayer.getCurrentTime()),t=Math.floor(ytPlayer.getDuration())||1; const pf=document.getElementById('prog-fill'); const ct=document.getElementById('cur-time'); const tt=document.getElementById('tot-time'); if(pf)pf.style.width=Math.round(c/t*100)+'%'; if(ct)ct.textContent=fmt(c); if(tt)tt.textContent=fmt(t); } catch {}
   }, 1000);
 }
 
-// ===== SOURCE MANAGEMENT =====
-function setSource(src) {
-  currentSource = src;
-  document.querySelectorAll('.stab').forEach(b => {
-    b.className = 'stab';
-    if (b.dataset.src === src) b.classList.add(`active-${src}`);
-  });
-  // Adjust embed wrap size
-  const wrap = document.getElementById('embed-wrap');
-  wrap.className = `embed-wrap ${src}-mode`;
-  // Show/hide progress bar (only for YT)
-  document.getElementById('prog-wrap').style.display = src === 'yt' ? 'block' : 'none';
-}
+// ============================================================
+// NAVIGATION
+// ============================================================
+const PAGE_TITLES = { dashboard:'Dashboard', songreqs:'Song Requests', commands:'Commands', timers:'Timers', giveaways:'Giveaways', regulars:'Regulars', moderation:'Moderación', logs:'Logs' };
 
-function setReqSource(src) {
-  reqSource = src;
-  document.querySelectorAll('.src-opt').forEach(b => {
-    b.className = 'src-opt';
-    if (b.dataset.src === src) b.classList.add(`sel-${src}`);
-  });
-}
-
-// ===== EMBED LOADERS =====
-function loadSpotifyEmbed(query) {
-  // Use Spotify oEmbed search URL format
-  const wrap = document.getElementById('embed-iframe-wrap');
-  const searchUrl = `https://open.spotify.com/search/${encodeURIComponent(query)}`;
-  wrap.innerHTML = `<iframe src="https://open.spotify.com/embed/search/${encodeURIComponent(query)}" 
-    width="100%" height="152" frameborder="0" 
-    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-    loading="lazy" style="border-radius:12px"></iframe>`;
-  wrap.style.display = 'block';
-  document.getElementById('embed-idle').style.display = 'none';
-}
-
-function loadSoundCloudEmbed(query) {
-  const wrap = document.getElementById('embed-iframe-wrap');
-  const scUrl = `https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/search%3Fq%3D${encodeURIComponent(query)}&color=%23fe2c55&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false`;
-  wrap.innerHTML = `<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
-    src="${scUrl}" style="border-radius:12px"></iframe>`;
-  wrap.style.display = 'block';
-  document.getElementById('embed-idle').style.display = 'none';
-}
-
-// ===== WEBSOCKET =====
-function connectToLive() {
-  let username = document.getElementById('input-username').value.trim().replace('@','');
-  if (!username) { setConnStatus('Ingresá un usuario válido.','error'); return; }
-  const btn = document.getElementById('btn-connect');
-  btn.disabled = true; btn.textContent = 'Conectando…';
-  setConnStatus('Conectando al servidor…','');
-  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${proto}//${location.host}`);
-  ws.onopen = () => ws.send(JSON.stringify({ type:'connect', username }));
-  ws.onmessage = e => handleMsg(JSON.parse(e.data));
-  ws.onerror = () => { setConnStatus('No se pudo conectar al servidor.','error'); btn.disabled = false; btn.textContent = 'Conectar al Live 🔴'; };
-  ws.onclose = () => { if (document.getElementById('main-app').style.display !== 'none') { sysMsg('⚠️ Conexión perdida.'); } };
-}
-
-function handleMsg(data) {
-  const btn = document.getElementById('btn-connect');
-  if (data.type === 'connected') {
-    document.getElementById('connect-screen').style.display = 'none';
-    document.getElementById('main-app').style.display = 'block';
-    document.getElementById('connected-user').textContent = `@${data.username}`;
-    sysMsg(`✅ Conectado al live de @${data.username}`);
-    startLiveTimer();
-    btn.disabled = false; btn.textContent = 'Conectar al Live 🔴';
+function nav(page) {
+  currentPage = page;
+  document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(b => { if(b.getAttribute('onclick')?.includes(`'${page}'`)) b.classList.add('active'); });
+  document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
+  document.getElementById('topbar-actions').innerHTML = '';
+  const content = document.getElementById('page-content');
+  content.innerHTML = '';
+  switch(page) {
+    case 'dashboard':  renderDashboard(); break;
+    case 'songreqs':   renderSongReqs(); break;
+    case 'commands':   renderCommands(); break;
+    case 'timers':     renderTimers(); break;
+    case 'giveaways':  renderGiveaways(); break;
+    case 'regulars':   renderRegulars(); break;
+    case 'moderation': renderModeration(); break;
+    case 'logs':       renderLogs(); break;
   }
-  if (data.type === 'error') { setConnStatus(data.text,'error'); btn.disabled = false; btn.textContent = 'Conectar al Live 🔴'; }
-  if (data.type === 'status') setConnStatus(data.text,'');
-  if (data.type === 'chat') {
-    addChatMsg(data);
-    if (data.songRequest && requestsOpen) {
-      if (subsOnly && !data.isSub) return;
-      addSongRequest(data.user, data.songRequest.song, currentSource);
+}
+
+// ============================================================
+// WEBSOCKET
+// ============================================================
+function connectToLive() {
+  let username = document.getElementById('inp-user').value.trim().replace('@','');
+  if (!username) { setConnStatus('Ingresá un usuario válido.','err'); return; }
+  const btn = document.getElementById('btn-conn');
+  btn.disabled=true; btn.textContent='Conectando…';
+  setConnStatus('Conectando al servidor…','');
+  const proto = location.protocol==='https:'?'wss:':'ws:';
+  ws = new WebSocket(`${proto}//${location.host}`);
+  ws.onopen = () => ws.send(JSON.stringify({type:'connect',username}));
+  ws.onmessage = e => handleWS(JSON.parse(e.data));
+  ws.onerror = () => { setConnStatus('No se pudo conectar al servidor.','err'); btn.disabled=false; btn.textContent='Conectar al Live 🔴'; };
+  ws.onclose = () => { if(document.getElementById('app').classList.contains('visible')) sysMsg('⚠️ Conexión perdida.'); };
+}
+
+function handleWS(data) {
+  const btn = document.getElementById('btn-conn');
+  if (data.type==='connected') {
+    connectedUser = data.username;
+    document.getElementById('connect-screen').style.display='none';
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('sb-username').textContent = `@${data.username}`;
+    document.getElementById('sb-avatar').textContent = data.username.slice(0,2).toUpperCase();
+    document.getElementById('live-indicator').style.display='flex';
+    btn.disabled=false; btn.textContent='Conectar al Live 🔴';
+    startLiveTimer();
+    nav('dashboard');
+    sysMsg(`✅ Conectado al live de @${data.username}`);
+  }
+  if (data.type==='error')  { setConnStatus(data.text,'err'); btn.disabled=false; btn.textContent='Conectar al Live 🔴'; }
+  if (data.type==='status') setConnStatus(data.text,'');
+
+  if (data.type==='chat') {
+    addChatFeed(data);
+    if (data.songRequest) {
+      addSongRequest(data.user, data.songRequest.song, currentSrc);
+    }
+    if (data.commandTriggered && currentPage==='dashboard') {
+      sysMsg(`⌘ ${data.user} → ${data.command}`);
+      stats.commands++;
     }
   }
-  if (data.type === 'gift') addMsg(`🎁 ${data.user} envió ${data.repeatCount}x ${data.giftName}!`, 'gift');
-  if (data.type === 'viewers') {
-    const v = data.count;
-    const txt = v >= 1000 ? `${(v/1000).toFixed(1)}K` : `${v}`;
-    document.getElementById('viewer-count').textContent = txt + ' viewers';
-    document.getElementById('st-view').textContent = txt;
+  if (data.type==='modAction') { stats.mods++; sysMsg(`🛡 Moderado: ${data.user} (${data.action})`); }
+  if (data.type==='gift') { addGiftFeed(data); }
+  if (data.type==='join') { /* silent */ }
+  if (data.type==='follow') { sysMsg(`💜 ${data.user} te siguió`); }
+  if (data.type==='viewers') {
+    const v=data.count; liveStats.viewers=v;
+    const txt = v>=1000?`${(v/1000).toFixed(1)}K`:String(v);
+    document.getElementById('sb-viewers').textContent = txt+' viewers';
+    const vc=document.getElementById('dash-viewers'); if(vc) vc.textContent=txt;
   }
-  if (data.type === 'streamEnd') { sysMsg(data.text); }
-  if (data.type === 'disconnected') { document.getElementById('connect-screen').style.display = 'flex'; document.getElementById('main-app').style.display = 'none'; stopLiveTimer(); }
-
-  // YouTube results
-  if (data.type === 'youtubeSearching') { /* searching msg already shown */ }
-  if (data.type === 'youtubeResult') {
-    const p = pendingReqs[data.requestId];
-    delete pendingReqs[data.requestId];
-    onYTFound(data, p?.user || '@unknown', p?.source || 'yt');
+  if (data.type==='timerFired') { sysMsg(`⏱ ${data.name}: ${data.message}`); }
+  if (data.type==='giveawayEntry') {
+    const cnt = document.getElementById('gw-entry-count');
+    if (cnt) cnt.textContent = data.count;
   }
-  if (data.type === 'youtubeNotFound') {
-    const p = pendingReqs[data.requestId];
-    delete pendingReqs[data.requestId];
+  if (data.type==='streamEnd') { sysMsg(data.text); document.getElementById('live-indicator').style.display='none'; }
+  if (data.type==='disconnected') {
+    document.getElementById('connect-screen').style.display='flex';
+    document.getElementById('app').classList.remove('visible');
+    stopLiveTimer(); queue=[]; nowPlaying=null;
+  }
+  if (data.type==='youtubeResult') {
+    const p = pendingReqs[data.requestId]; delete pendingReqs[data.requestId];
+    if(p) onYTFound(data, p.user);
+  }
+  if (data.type==='youtubeNotFound') {
+    const p = pendingReqs[data.requestId]; delete pendingReqs[data.requestId];
     sysMsg(`❌ No encontré "${data.query}" en YouTube.`);
   }
 }
 
-function disconnectLive() {
-  if (ws) ws.send(JSON.stringify({ type:'disconnect' }));
-  stopLiveTimer(); queue = []; nowPlaying = null;
+function disconnectLive() { if(ws) ws.send(JSON.stringify({type:'disconnect'})); }
+function setConnStatus(t,type) { const el=document.getElementById('conn-status'); el.textContent=t; el.className='conn-status'+(type?' '+type:''); }
+
+// ============================================================
+// CHAT FEED (shared across pages)
+// ============================================================
+const chatFeedItems = [];
+function addChatFeed(data) {
+  chatFeedItems.unshift(data);
+  if (chatFeedItems.length > 200) chatFeedItems.pop();
+  if (currentPage==='dashboard') appendChatFeedItem(data);
+}
+function addGiftFeed(data) {
+  const item = { ...data, isGift:true };
+  chatFeedItems.unshift(item);
+  if (currentPage==='dashboard') {
+    const feed = document.getElementById('chat-feed');
+    if (!feed) return;
+    const d = document.createElement('div'); d.className='cf-gift';
+    d.textContent = `🎁 ${data.user} envió ${data.repeatCount}x ${data.giftName}!`;
+    feed.prepend(d); if(feed.children.length>80) feed.removeChild(feed.lastChild);
+  }
+}
+function appendChatFeedItem(data) {
+  const feed = document.getElementById('chat-feed');
+  if (!feed) return;
+  const init = data.user.replace('@','').slice(0,2).toUpperCase();
+  const time = new Date(data.timestamp).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  const d = document.createElement('div'); d.className='cf-item fade-in';
+  d.innerHTML=`<div class="cf-avatar">${init}</div><div class="cf-content"><div class="cf-user">${data.user}${data.isMod?'<span class="badge badge-cyan" style="font-size:.55rem">MOD</span>':''}${data.isSub?'<span class="badge badge-purple" style="font-size:.55rem">SUB</span>':''}</div><div class="cf-text${data.songRequest?' song':''}">${data.songRequest?'🎵 '+data.comment:data.comment}</div></div><div class="cf-time">${time}</div>`;
+  feed.prepend(d); if(feed.children.length>80) feed.removeChild(feed.lastChild);
+}
+function sysMsg(text) {
+  const feed = document.getElementById('chat-feed');
+  if (!feed) return;
+  const d = document.createElement('div'); d.className='cf-sys fade-in'; d.innerHTML=text;
+  feed.prepend(d); if(feed.children.length>80) feed.removeChild(feed.lastChild);
 }
 
-// ===== SONG REQUEST =====
-async function addSongRequest(user, query, source) {
-  stats.req++;
-  document.getElementById('st-req').textContent = stats.req;
-  sysMsg(`<span class="spin">⟳</span> Buscando "${query}" (${source.toUpperCase()})…`);
-
-  if (source === 'yt') {
-    const requestId = ++reqCounter;
-    pendingReqs[requestId] = { user, query, source };
-    if (ws?.readyState === ws.OPEN) ws.send(JSON.stringify({ type:'searchYoutube', query, requestId }));
+// ============================================================
+// SONG REQUESTS
+// ============================================================
+function addSongRequest(user, query, source) {
+  stats.req++; updateQueueBadge();
+  if (source==='yt') {
+    const id = ++reqCounter; pendingReqs[id]={user,query};
+    if(ws?.readyState===1) ws.send(JSON.stringify({type:'searchYoutube',query,requestId:id}));
   } else {
-    // Spotify / SoundCloud: add directly to queue, embed handles search
-    addToQueue({ title: query, author: '', user, source, thumbnail: null, videoId: null, duration: '?', durationSecs: 0 });
-    sysMsg(`✅ "${query}" agregada a la cola (${source.toUpperCase()})`);
+    addToQueue({title:query,author:'',user,src:source,thumbnail:null,videoId:null,duration:'?',durationSecs:0});
   }
-  askClaude(user, query, source);
 }
-
-function onYTFound(data, user, source) {
-  sysMsg(`🎵 Encontrado: ${data.title} — ${data.author}`);
-  addToQueue({ title: data.title, author: data.author, user, source: 'yt', thumbnail: data.thumbnail, videoId: data.videoId, duration: data.duration, durationSecs: data.durationSecs });
+function onYTFound(data, user) {
+  addToQueue({title:data.title,author:data.author,user,src:'yt',thumbnail:data.thumbnail,videoId:data.videoId,duration:data.duration,durationSecs:data.durationSecs});
 }
-
-async function askClaude(user, query, source) {
-  try {
-    const srcName = source === 'yt' ? 'YouTube' : source === 'sp' ? 'Spotify' : 'SoundCloud';
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 80,
-        messages: [{ role: 'user', content: `Bot TikTok. ${user} pidió "${query}" en ${srcName}. Responde en español, 1 oración muy corta y divertida confirmando. Sin asteriscos.` }]
-      })
-    });
-    const d = await res.json();
-    sysMsg(`🤖 ${d.content?.[0]?.text || `¡"${query}" agregada! 🎵`}`);
-  } catch {}
-}
-
-async function manualRequest() {
-  const user = document.getElementById('req-user').value.trim() || '@streamer';
-  const song = document.getElementById('req-song').value.trim();
-  if (!song) { document.getElementById('req-song').focus(); return; }
-  const btn = document.getElementById('btn-add');
-  btn.disabled = true; btn.textContent = '⏳';
-  document.getElementById('ai-bubble').className = 'ai-bubble on';
-  document.getElementById('ai-text').className = 'ai-typing';
-  document.getElementById('ai-text').textContent = '';
-  await addSongRequest(user, song, reqSource);
-  try {
-    const srcName = reqSource === 'yt' ? 'YouTube' : reqSource === 'sp' ? 'Spotify' : 'SoundCloud';
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 80,
-        messages: [{ role: 'user', content: `Bot TikTok. Mod agregó "${song}" en ${srcName} para ${user}. Responde en español, 1 oración. Sin asteriscos.` }]
-      })
-    });
-    const d = await res.json();
-    document.getElementById('ai-text').className = '';
-    document.getElementById('ai-text').textContent = d.content?.[0]?.text || `"${song}" agregada 🎵`;
-  } catch {
-    document.getElementById('ai-text').className = '';
-    document.getElementById('ai-text').textContent = `"${song}" agregada a la cola 🎵`;
-  }
-  document.getElementById('req-song').value = '';
-  btn.disabled = false; btn.innerHTML = '+ Agregar';
-}
-
-// ===== QUEUE =====
 function addToQueue(song) {
-  queue.push(song);
-  renderQueue();
+  queue.push(song); updateQueueBadge();
+  if (currentPage==='songreqs') renderQueueList();
   if (!nowPlaying && autoPlay) loadNext();
 }
-
-function renderQueue() {
-  const list = document.getElementById('qlist');
-  if (!queue.length) {
-    list.innerHTML = '<div class="empty-state"><div class="big">🎵</div>Cola vacía — viewers piden con <strong>!sr</strong></div>';
-  } else {
-    list.innerHTML = queue.map((s,i) => `
-      <div class="qitem" onclick="playFromQueue(${i})">
-        <span class="qnum">${i+1}</span>
-        <div class="qthumb">${s.thumbnail ? `<img src="${s.thumbnail}" loading="lazy">` : '🎵'}</div>
-        <div class="qmeta">
-          <div class="qname">${s.title}</div>
-          <div class="qsub">${s.author ? s.author+' · ' : ''}${s.user}</div>
-        </div>
-        <span class="qsource ${s.source}">${s.source.toUpperCase()}</span>
-        <button class="qdel" onclick="event.stopPropagation();removeFromQueue(${i})">✕</button>
-      </div>
-    `).join('');
-  }
-  document.getElementById('qcount').textContent = `${queue.length} canción${queue.length!==1?'es':''}`;
-}
-
-function removeFromQueue(i) { queue.splice(i,1); renderQueue(); }
-function playFromQueue(i) { const s = queue.splice(i,1)[0]; setNowPlaying(s); renderQueue(); }
-
 function loadNext() {
-  if (!queue.length) { nowPlaying = null; return; }
+  if (!queue.length) { nowPlaying=null; return; }
   const s = isShuffle ? queue.splice(Math.floor(Math.random()*queue.length),1)[0] : queue.shift();
-  setNowPlaying(s); renderQueue();
+  setNowPlaying(s); if(currentPage==='songreqs') renderQueueList();
 }
-
+function playFromQueue(i) { const s=queue.splice(i,1)[0]; setNowPlaying(s); renderQueueList(); }
+function removeFromQueue(i) { queue.splice(i,1); renderQueueList(); updateQueueBadge(); }
 function setNowPlaying(song) {
-  nowPlaying = song;
-
-  // Update meta
-  document.getElementById('np-title').textContent = song.title;
-  document.getElementById('np-artist').textContent = song.author || '';
-  document.getElementById('np-by').textContent = `Pedida por ${song.user} 💖`;
-  document.getElementById('np-status').textContent = 'REPRODUCIENDO';
-
-  // Clean previous embeds
-  document.getElementById('yt-iframe-container').innerHTML = '';
-  document.getElementById('yt-iframe-container').style.display = 'none';
-  document.getElementById('embed-iframe-wrap').innerHTML = '';
-  document.getElementById('embed-iframe-wrap').style.display = 'none';
-  document.getElementById('yt-thumb-layer').style.display = 'none';
-  document.getElementById('embed-idle').style.display = 'none';
-  if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
-
-  // Switch to correct source tab
-  setSource(song.source);
-
-  if (song.source === 'yt') {
-    document.getElementById('prog-wrap').style.display = 'block';
-    if (song.thumbnail) {
-      document.getElementById('yt-thumb-img').src = song.thumbnail;
-      document.getElementById('yt-thumb-layer').style.display = 'block';
-    }
-    if (ytReady) setTimeout(() => startYTPlayback(), 300);
-  } else if (song.source === 'sp') {
-    document.getElementById('prog-wrap').style.display = 'none';
-    loadSpotifyEmbed(song.title + ' ' + (song.author || ''));
-  } else if (song.source === 'sc') {
-    document.getElementById('prog-wrap').style.display = 'none';
-    loadSoundCloudEmbed(song.title + ' ' + (song.author || ''));
-  }
-
-  stats.play++; document.getElementById('st-play').textContent = stats.play;
-  sysMsg(`▶ Reproduciendo: ${song.title}${song.author?' — '+song.author:''} (${song.source.toUpperCase()})`);
+  nowPlaying=song; stats.play++;
+  if (currentPage!=='songreqs') return;
+  document.getElementById('np-title').textContent=song.title;
+  document.getElementById('np-artist').textContent=song.author||'';
+  document.getElementById('np-by').textContent=`Pedida por ${song.user} 💖`;
+  document.getElementById('np-status').textContent='REPRODUCIENDO';
+  setPlayerSource(song.src);
+  const pf=document.getElementById('prog-fill'); const ct=document.getElementById('cur-time'); const tt=document.getElementById('tot-time');
+  if(pf)pf.style.width='0%'; if(ct)ct.textContent='0:00'; if(tt)tt.textContent=song.duration||'0:00';
+  document.getElementById('yt-iframe-container').style.display='none';
+  document.getElementById('embed-iframe-wrap').style.display='none';
+  document.getElementById('yt-thumb-layer').style.display='none';
+  if(ytPlayer){try{ytPlayer.destroy();}catch{}ytPlayer=null;}
+  if(song.src==='yt'&&song.thumbnail){document.getElementById('yt-thumb-img').src=song.thumbnail;document.getElementById('yt-thumb-layer').style.display='block';if(ytReady)setTimeout(()=>startYTPlayback(),300);}
+  else if(song.src==='sp'){loadSpotifyEmbed(song.title+' '+(song.author||''));}
+  else if(song.src==='sc'){loadSoundCloudEmbed(song.title+' '+(song.author||''));}
 }
-
-// ===== CONTROLS =====
-function togglePlay() {
-  if (!ytPlayer) { if (nowPlaying?.source === 'yt') startYTPlayback(); return; }
-  try { isPlaying ? ytPlayer.pauseVideo() : ytPlayer.playVideo(); } catch {}
+function updateQueueBadge() {
+  const b=document.getElementById('sb-queue-count');
+  if(!b) return; b.style.display=queue.length?'':'none'; b.textContent=queue.length;
 }
-function toggleShuffle() { isShuffle = !isShuffle; document.getElementById('btn-shuf').classList.toggle('active', isShuffle); }
-function toggleRepeat()  { isRepeat  = !isRepeat;  document.getElementById('btn-rep').classList.toggle('active', isRepeat); }
-function toggleAutoplay(){ autoPlay  = !autoPlay;  document.getElementById('tog-auto').classList.toggle('on', autoPlay); }
-function nextSong() {
-  if (ytPlayer) { try { ytPlayer.stopVideo(); ytPlayer.destroy(); } catch {} ytPlayer = null; }
-  document.getElementById('yt-iframe-container').style.display = 'none';
-  if (isRepeat && nowPlaying) { setNowPlaying(nowPlaying); return; }
-  loadNext();
+function renderQueueList() {
+  const list=document.getElementById('queue-list'); if(!list) return;
+  if(!queue.length){list.innerHTML='<div class="empty"><div class="empty-icon">🎵</div>Cola vacía — espera requests del chat</div>';updateQueueBadge();return;}
+  list.innerHTML=queue.map((s,i)=>`<div class="qitem" onclick="playFromQueue(${i})"><span class="qnum">${i+1}</span><div class="qthumb">${s.thumbnail?`<img src="${s.thumbnail}" loading="lazy">`:'🎵'}</div><div class="qmeta"><div class="qname">${s.title}</div><div class="qsub">${s.author?s.author+' · ':''}${s.user}</div></div><span class="qs-badge qs-${s.src}">${s.src.toUpperCase()}</span><button class="qdel" onclick="event.stopPropagation();removeFromQueue(${i})">✕</button></div>`).join('');
+  updateQueueBadge();
 }
-function prevSong() { if (ytPlayer) { try { ytPlayer.seekTo(0); } catch {} } }
+function setPlayerSource(src) {
+  currentSrc=src;
+  document.querySelectorAll('.stab').forEach(b=>b.className='stab');
+  const t=document.querySelector(`.stab[data-src="${src}"]`); if(t) t.className=`stab ${src}-on`;
+  const ew=document.getElementById('embed-wrap'); if(ew){ew.className=`embed-wrap ${src}`;}
+  const pw=document.getElementById('prog-wrap'); if(pw){pw.style.display=src==='yt'?'block':'none';}
+}
+function loadSpotifyEmbed(q){const w=document.getElementById('embed-iframe-wrap');if(!w)return;w.innerHTML=`<iframe src="https://open.spotify.com/embed/search/${encodeURIComponent(q)}" width="100%" height="152" frameborder="0" allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy" style="border-radius:12px"></iframe>`;w.style.display='block';const idle=document.getElementById('embed-idle');if(idle)idle.style.display='none';}
+function loadSoundCloudEmbed(q){const w=document.getElementById('embed-iframe-wrap');if(!w)return;const u=`https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/search%3Fq%3D${encodeURIComponent(q)}&color=%23fe2c55&auto_play=true&hide_related=true&show_comments=false`;w.innerHTML=`<iframe width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${u}" style="border-radius:12px"></iframe>`;w.style.display='block';const idle=document.getElementById('embed-idle');if(idle)idle.style.display='none';}
+function nextSong(){if(ytPlayer){try{ytPlayer.stopVideo();ytPlayer.destroy();}catch{}ytPlayer=null;}const w=document.getElementById('yt-iframe-container');if(w)w.style.display='none';if(isRepeat&&nowPlaying){setNowPlaying(nowPlaying);return;}loadNext();}
+function prevSong(){if(ytPlayer){try{ytPlayer.seekTo(0);}catch{}}}
+function togglePlay(){if(!ytPlayer){if(nowPlaying?.src==='yt')startYTPlayback();return;}try{isPlaying?ytPlayer.pauseVideo():ytPlayer.playVideo();}catch{}}
+function toggleShuffle(){isShuffle=!isShuffle;const b=document.getElementById('btn-shuf');if(b)b.classList.toggle('active',isShuffle);}
+function toggleRepeat(){isRepeat=!isRepeat;const b=document.getElementById('btn-rep');if(b)b.classList.toggle('active',isRepeat);}
 
-// ===== CHAT =====
-function addChatMsg(data) {
-  const msgs = document.getElementById('msgs');
-  const time = new Date(data.timestamp).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
-  const init = data.user.replace('@','').slice(0,2).toUpperCase();
-  const div = document.createElement('div'); div.className = 'msg';
-  div.innerHTML = `
-    <div class="mavatar">${init}</div>
-    <div class="mcont">
-      <div class="mhead">
-        <span class="muser">${data.user}</span>
-        ${data.isMod?'<span class="mbadge mod">MOD</span>':''}
-        ${data.isSub?'<span class="mbadge sub">SUB</span>':''}
-        ${data.songRequest?'<span class="mbadge song">SONG</span>':''}
+// ============================================================
+// PAGES
+// ============================================================
+
+// ─── DASHBOARD ───
+function renderDashboard() {
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-icon si-pink">🎵</div><div class="stat-val sv-pink">${stats.req}</div><div class="stat-lbl">Song Requests</div></div>
+    <div class="stat-box"><div class="stat-icon si-cyan">👁</div><div class="stat-val sv-cyan" id="dash-viewers">${liveStats.viewers||'—'}</div><div class="stat-lbl">Viewers</div></div>
+    <div class="stat-box"><div class="stat-icon si-purple">⌘</div><div class="stat-val sv-purple">${stats.commands}</div><div class="stat-lbl">Comandos usados</div></div>
+    <div class="stat-box"><div class="stat-icon si-amber">🛡</div><div class="stat-val sv-amber">${stats.mods}</div><div class="stat-lbl">Mensajes moderados</div></div>
+  </div>
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="card-head"><div class="card-title">💬 Chat en vivo</div><button class="btn btn-ghost btn-sm" onclick="document.getElementById('chat-feed').innerHTML=''">Limpiar</button></div>
+      <div class="card-body p0" style="padding:.625rem"><div class="chat-feed" id="chat-feed"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">🎵 Cola actual</div><span style="font-size:.7rem;color:var(--t3)">${queue.length} canciones</span></div>
+      <div class="card-body p0" style="padding:.625rem">
+        ${queue.length?queue.slice(0,8).map((s,i)=>`<div class="qitem" style="animation-delay:${i*.04}s"><span class="qnum">${i+1}</span><div class="qthumb">${s.thumbnail?`<img src="${s.thumbnail}">`:'🎵'}</div><div class="qmeta"><div class="qname">${s.title}</div><div class="qsub">${s.user}</div></div><span class="qs-badge qs-${s.src}">${s.src.toUpperCase()}</span></div>`).join(''):'<div class="empty"><div class="empty-icon">🎵</div>Cola vacía</div>'}
       </div>
-      <div class="mtext">${data.songRequest?`🎵 <span class="sreq">${data.comment}</span>`:data.comment}</div>
-      <div class="mtime">${time}</div>
+    </div>
+  </div>`;
+  chatFeedItems.slice(0,50).reverse().forEach(item => {
+    if (item.isGift) addGiftFeed(item);
+    else if(item.type==='sys') { const d=document.createElement('div');d.className='cf-sys';d.textContent=item.text;const feed=document.getElementById('chat-feed');if(feed){feed.prepend(d);}} 
+    else appendChatFeedItem(item);
+  });
+}
+
+// ─── SONG REQUESTS ───
+function renderSongReqs() {
+  document.getElementById('topbar-actions').innerHTML=`
+    <div style="display:flex;align-items:center;gap:.5rem">
+      <input class="input input-sm" id="req-user" placeholder="@usuario" style="width:110px">
+      <input class="input input-sm" id="req-song-inp" placeholder="Canción o artista…" style="width:200px">
+      <div style="display:flex;gap:.2rem;background:var(--s3);border:1px solid var(--b1);border-radius:var(--r6);padding:.2rem">
+        <button class="btn btn-sm" id="rsrc-yt" onclick="setReqSrc('yt')" style="background:var(--pink-10);color:var(--pink);border-color:var(--pink-20);border-radius:4px">YT</button>
+        <button class="btn btn-sm" id="rsrc-sp" onclick="setReqSrc('sp')" style="color:var(--t3);background:none;border:none">SP</button>
+        <button class="btn btn-sm" id="rsrc-sc" onclick="setReqSrc('sc')" style="color:var(--t3);background:none;border:none">SC</button>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="manualReq()">+ Agregar</button>
     </div>`;
-  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+  document.getElementById('page-content').innerHTML=`
+  <div class="player-area">
+    <div>
+      <div class="src-tabs">
+        <button class="stab yt-on" data-src="yt" onclick="setPlayerSource('yt')">▶️ YouTube</button>
+        <button class="stab" data-src="sp" onclick="setPlayerSource('sp')">🟢 Spotify</button>
+        <button class="stab" data-src="sc" onclick="setPlayerSource('sc')">🟠 SoundCloud</button>
+      </div>
+      <div class="card" style="border-color:var(--pink-20);background:linear-gradient(160deg,rgba(254,44,85,.05),var(--s1) 60%)">
+        <div class="card-head"><div class="card-title">▶ REPRODUCIENDO</div><span id="np-status" style="font-size:.65rem;color:var(--pink);font-weight:700">EN ESPERA</span></div>
+        <div class="card-body">
+          <div class="embed-wrap yt" id="embed-wrap">
+            <div class="embed-idle" id="embed-idle"><div class="embed-idle-icon">🎵</div><span style="font-size:.75rem">Esperando canciones…</span></div>
+            <div class="yt-thumb-layer" id="yt-thumb-layer" onclick="startYTPlayback()"><img id="yt-thumb-img" src=""><div class="play-over"><div class="play-big">▶</div></div></div>
+            <div id="yt-iframe-container" style="position:absolute;inset:0;display:none"></div>
+            <div id="embed-iframe-wrap" style="position:absolute;inset:0;display:none"></div>
+          </div>
+          <div class="np-meta"><div class="np-title" id="np-title">Esperando canciones…</div><div class="np-artist" id="np-artist">—</div><div class="np-by" id="np-by"></div></div>
+          <div id="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div><div class="prog-times"><span id="cur-time">0:00</span><span id="tot-time">0:00</span></div></div>
+          <div class="controls" style="margin-top:.75rem">
+            <button class="ctrl sm" onclick="prevSong()">⏮</button>
+            <button class="ctrl sm" id="btn-shuf" onclick="toggleShuffle()">🔀</button>
+            <button class="ctrl lg" id="btn-play" onclick="togglePlay()">▶</button>
+            <button class="ctrl sm" id="btn-rep" onclick="toggleRepeat()">🔁</button>
+            <button class="ctrl sm" onclick="nextSong()">⏭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">📋 COLA</div><div style="display:flex;align-items:center;gap:.5rem"><span id="qlen" style="font-size:.7rem;color:var(--t3)">${queue.length} canciones</span><button class="btn btn-ghost btn-sm" onclick="queue=[];renderQueueList()">Limpiar</button></div></div>
+      <div class="card-body p0" style="padding:.625rem"><div id="queue-list"></div></div>
+    </div>
+  </div>`;
+  renderQueueList();
+  if(nowPlaying) setNowPlaying(nowPlaying);
 }
-function addMsg(text, type='sys') {
-  const msgs = document.getElementById('msgs');
-  const div = document.createElement('div'); div.className = `msg ${type}`;
-  div.innerHTML = `<div class="mcont"><div class="mtext">${text}</div></div>`;
-  msgs.appendChild(div); msgs.scrollTop = msgs.scrollHeight;
+function setReqSrc(src) {
+  reqSrc=src;
+  ['yt','sp','sc'].forEach(s=>{const b=document.getElementById(`rsrc-${s}`);if(b){b.style.background=s===src?`var(--${s==='yt'?'pink':s==='sp'?'green':'orange'}-10)`:'none';b.style.color=s===src?`var(--${s==='yt'?'pink':s==='sp'?'green':'orange'})`:'var(--t3)';b.style.borderColor=s===src?`var(--${s==='yt'?'pink':s==='sp'?'green':'orange'}-20)`:'transparent';}});
 }
-function sysMsg(t) { addMsg(t,'sys'); }
-function clearChat() { document.getElementById('msgs').innerHTML = ''; sysMsg('Chat limpiado.'); }
+async function manualReq() {
+  const user=(document.getElementById('req-user')?.value?.trim()||'@streamer');
+  const song=document.getElementById('req-song-inp')?.value?.trim();
+  if(!song) return;
+  document.getElementById('req-song-inp').value='';
+  addSongRequest(user, song, reqSrc);
+}
 
-// ===== TOGGLES =====
-function toggleRequests() { requestsOpen = !requestsOpen; document.getElementById('tog-req').classList.toggle('on',requestsOpen); sysMsg(requestsOpen?'✅ Requests activados.':'🔒 Requests cerrados.'); }
-function toggleSubs()     { subsOnly = !subsOnly; document.getElementById('tog-subs').classList.toggle('on',subsOnly); sysMsg(subsOnly?'⭐ Solo subs.':'👥 Todos pueden pedir.'); }
+// ─── COMMANDS ───
+async function renderCommands() {
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openCommandModal()">+ Nuevo comando</button>`;
+  const cmds = await api('/api/commands');
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-icon si-purple">⌘</div><div class="stat-val sv-purple">${cmds.length}</div><div class="stat-lbl">Comandos</div></div>
+    <div class="stat-box"><div class="stat-icon si-green">✅</div><div class="stat-val sv-green">${cmds.filter(c=>c.enabled!==false).length}</div><div class="stat-lbl">Activos</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">⌘ MIS COMANDOS</div></div>
+    ${cmds.length?`<table class="table"><thead><tr><th>Comando</th><th>Respuesta</th><th>Nivel</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+    ${cmds.map(cmd=>`<tr>
+      <td><code style="background:var(--s3);padding:.2em .5em;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--cyan)">${cmd.command}</code></td>
+      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)">${cmd.response}</td>
+      <td><span class="badge ${cmd.userlevel==='mod'?'badge-cyan':cmd.userlevel==='sub'?'badge-purple':'badge-gray'}">${cmd.userlevel||'Todos'}</span></td>
+      <td><button class="toggle ${cmd.enabled!==false?'on':''}" onclick="toggleCmd(${cmd.id},${cmd.enabled!==false})"></button></td>
+      <td><div style="display:flex;gap:.35rem">
+        <button class="btn btn-ghost btn-sm" onclick="openCommandModal(${JSON.stringify(JSON.stringify(cmd))})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCmd(${cmd.id})">🗑</button>
+      </div></td>
+    </tr>`).join('')}
+    </tbody></table>`:`<div class="empty"><div class="empty-icon">⌘</div>No hay comandos. Creá tu primer comando.</div>`}
+  </div>`;
+}
+function openCommandModal(cmdJson) {
+  const cmd = cmdJson ? JSON.parse(cmdJson) : null;
+  document.getElementById('modal-title').textContent = cmd ? 'Editar Comando' : 'Nuevo Comando';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Comando</label><input class="input" id="cmd-command" placeholder="!hola" value="${cmd?.command||''}"></div>
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Respuesta</label><input class="input" id="cmd-response" placeholder="¡Hola mundo!" value="${cmd?.response||''}"></div>
+    <div class="form-group"><label class="form-label">Nivel de usuario</label>
+    <select class="input" id="cmd-level"><option value="everyone" ${(!cmd?.userlevel||cmd.userlevel==='everyone')?'selected':''}>Todos</option><option value="sub" ${cmd?.userlevel==='sub'?'selected':''}>Suscriptores</option><option value="mod" ${cmd?.userlevel==='mod'?'selected':''}>Moderadores</option></select></div>`;
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+    <button class="btn btn-primary" onclick="saveCommand(${cmd?.id||'null'})">${cmd?'Guardar':'Crear'}</button>`;
+  openModal();
+}
+async function saveCommand(id) {
+  const body={command:document.getElementById('cmd-command').value.trim(),response:document.getElementById('cmd-response').value.trim(),userlevel:document.getElementById('cmd-level').value,enabled:true};
+  if(!body.command||!body.response)return;
+  if(id) await api(`/api/commands/${id}`,'PUT',body); else await api('/api/commands','POST',body);
+  closeModal(); renderCommands();
+}
+async function deleteCmd(id) { if(!confirm('¿Eliminar comando?'))return; await api(`/api/commands/${id}`,'DELETE'); renderCommands(); }
+async function toggleCmd(id,current) { await api(`/api/commands/${id}`,'PUT',{enabled:!current}); renderCommands(); }
 
-// ===== UTILS =====
-function fmt(s) { const m=Math.floor(s/60),sec=s%60; return `${m}:${String(sec).padStart(2,'0')}`; }
-function setConnStatus(t,type) { const el=document.getElementById('connect-status'); el.textContent=t; el.className='connect-status'+(type?' '+type:''); }
-function startLiveTimer() { liveTimer = setInterval(()=>{ liveSecs++; document.getElementById('st-time').textContent=fmt(liveSecs); },1000); }
-function stopLiveTimer()  { clearInterval(liveTimer); clearInterval(progTimer); }
+// ─── TIMERS ───
+async function renderTimers() {
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openTimerModal()">+ Nuevo timer</button>`;
+  const timers = await api('/api/timers');
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-icon si-green">⏱</div><div class="stat-val sv-green">${timers.length}</div><div class="stat-lbl">Timers</div></div>
+    <div class="stat-box"><div class="stat-icon si-cyan">✅</div><div class="stat-val sv-cyan">${timers.filter(t=>t.enabled).length}</div><div class="stat-lbl">Activos</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">⏱ MIS TIMERS</div></div>
+    ${timers.length?`<table class="table"><thead><tr><th>Nombre</th><th>Mensaje</th><th>Cada</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+    ${timers.map(t=>`<tr>
+      <td style="font-weight:600">${t.name}</td>
+      <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--t2)">${t.message}</td>
+      <td><span class="badge badge-green">${t.interval||5} min</span></td>
+      <td><button class="toggle ${t.enabled?'on':''}" onclick="toggleTimer(${t.id},${t.enabled})"></button></td>
+      <td><div style="display:flex;gap:.35rem">
+        <button class="btn btn-ghost btn-sm" onclick="openTimerModal(${JSON.stringify(JSON.stringify(t))})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTimer(${t.id})">🗑</button>
+      </div></td>
+    </tr>`).join('')}
+    </tbody></table>`:`<div class="empty"><div class="empty-icon">⏱</div>No hay timers. Los timers envían mensajes automáticos al chat.</div>`}
+  </div>`;
+}
+function openTimerModal(json) {
+  const t = json ? JSON.parse(json) : null;
+  document.getElementById('modal-title').textContent = t ? 'Editar Timer' : 'Nuevo Timer';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Nombre</label><input class="input" id="tm-name" placeholder="Ej: Promo" value="${t?.name||''}"></div>
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Mensaje</label><input class="input" id="tm-msg" placeholder="¡Seguime en TikTok!" value="${t?.message||''}"></div>
+    <div class="form-group"><label class="form-label">Intervalo (minutos)</label><input class="input" id="tm-int" type="number" min="1" max="120" value="${t?.interval||5}"></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveTimer(${t?.id||'null'})">${t?'Guardar':'Crear'}</button>`;
+  openModal();
+}
+async function saveTimer(id) {
+  const body={name:document.getElementById('tm-name').value.trim(),message:document.getElementById('tm-msg').value.trim(),interval:parseInt(document.getElementById('tm-int').value)||5,enabled:true};
+  if(!body.name||!body.message)return;
+  if(id) await api(`/api/timers/${id}`,'PUT',body); else await api('/api/timers','POST',body);
+  closeModal(); renderTimers();
+}
+async function deleteTimer(id) { if(!confirm('¿Eliminar timer?'))return; await api(`/api/timers/${id}`,'DELETE'); renderTimers(); }
+async function toggleTimer(id,cur) { await api(`/api/timers/${id}`,'PUT',{enabled:!cur}); renderTimers(); }
 
-// Enter keys
-document.addEventListener('DOMContentLoaded',()=>{
-  document.getElementById('input-username').addEventListener('keydown',e=>{ if(e.key==='Enter') connectToLive(); });
-  document.getElementById('req-song').addEventListener('keydown',e=>{ if(e.key==='Enter') manualRequest(); });
-});
+// ─── GIVEAWAYS ───
+async function renderGiveaways() {
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openGiveawayModal()">+ Nuevo sorteo</button>`;
+  const giveaways = await api('/api/giveaways');
+  const active = giveaways.find(g=>g.active);
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-icon si-amber">🎁</div><div class="stat-val sv-amber">${giveaways.length}</div><div class="stat-lbl">Sorteos</div></div>
+    <div class="stat-box"><div class="stat-icon si-green">👥</div><div class="stat-val sv-green">${active?active.entries?.length||0:'—'}</div><div class="stat-lbl">Participantes activos</div></div>
+  </div>
+  ${active?`
+  <div class="card gw-card" style="margin-bottom:1rem">
+    <div class="card-head"><div class="card-title">🎁 SORTEO ACTIVO: ${active.name}</div><div class="gw-active-badge"><div class="live-dot"></div>En curso</div></div>
+    <div class="card-body" style="text-align:center">
+      <div style="font-size:.825rem;color:var(--t2);margin-bottom:.5rem">Keyword: <code style="background:var(--s3);padding:.2em .6em;border-radius:4px;font-family:'IBM Plex Mono',monospace;color:var(--cyan)">${active.keyword||'!join'}</code></div>
+      <div class="entry-counter" id="gw-entry-count">${active.entries?.length||0}</div>
+      <div style="font-size:.75rem;color:var(--t3);margin-bottom:1.25rem">participantes</div>
+      <div style="display:flex;justify-content:center;gap:.625rem">
+        <button class="btn btn-primary" onclick="pickWinner(${active.id})">🎲 Elegir ganador</button>
+        <button class="btn btn-danger" onclick="stopGiveaway(${active.id})">Detener</button>
+      </div>
+      <div id="winner-area" style="margin-top:1rem"></div>
+    </div>
+  </div>`:''}
+  <div class="card">
+    <div class="card-head"><div class="card-title">🎁 MIS SORTEOS</div></div>
+    ${giveaways.length?`<table class="table"><thead><tr><th>Nombre</th><th>Keyword</th><th>Participantes</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>
+    ${giveaways.map(g=>`<tr>
+      <td style="font-weight:600">${g.name}</td>
+      <td><code style="background:var(--s3);padding:.2em .5em;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--cyan)">${g.keyword||'!join'}</code></td>
+      <td>${g.entries?.length||0}</td>
+      <td><span class="badge ${g.active?'badge-green':'badge-gray'}">${g.active?'Activo':'Inactivo'}</span></td>
+      <td><div style="display:flex;gap:.35rem">
+        ${!g.active?`<button class="btn btn-green btn-sm" onclick="startGiveaway(${g.id})">▶ Iniciar</button>`:`<button class="btn btn-danger btn-sm" onclick="stopGiveaway(${g.id})">■ Detener</button>`}
+        <button class="btn btn-danger btn-sm" onclick="deleteGiveaway(${g.id})">🗑</button>
+      </div></td>
+    </tr>`).join('')}
+    </tbody></table>`:`<div class="empty"><div class="empty-icon">🎁</div>No hay sorteos. Creá uno para que los viewers participen con un keyword.</div>`}
+  </div>`;
+}
+function openGiveawayModal() {
+  document.getElementById('modal-title').textContent='Nuevo Sorteo';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Nombre del sorteo</label><input class="input" id="gw-name" placeholder="Sorteo de regalo"></div>
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Keyword para entrar</label><input class="input" id="gw-kw" placeholder="!join" value="!join"></div>
+    <div class="form-group"><label class="form-label">Descripción (opcional)</label><input class="input" id="gw-desc" placeholder="Premio: suscripción de 1 mes"></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveGiveaway()">Crear</button>`;
+  openModal();
+}
+async function saveGiveaway() {
+  const body={name:document.getElementById('gw-name').value.trim(),keyword:document.getElementById('gw-kw').value.trim()||'!join',description:document.getElementById('gw-desc').value.trim()};
+  if(!body.name)return;
+  await api('/api/giveaways','POST',body); closeModal(); renderGiveaways();
+}
+async function startGiveaway(id) { await api(`/api/giveaways/${id}`,'PUT',{active:true,entries:[]}); renderGiveaways(); }
+async function stopGiveaway(id) { await api(`/api/giveaways/${id}`,'PUT',{active:false}); renderGiveaways(); }
+async function deleteGiveaway(id) { if(!confirm('¿Eliminar sorteo?'))return; await api(`/api/giveaways/${id}`,'DELETE'); renderGiveaways(); }
+async function pickWinner(id) {
+  const giveaways=await api('/api/giveaways'); const g=giveaways.find(x=>x.id==id);
+  if(!g||!g.entries?.length){alert('No hay participantes.');return;}
+  const winner=g.entries[Math.floor(Math.random()*g.entries.length)];
+  const area=document.getElementById('winner-area');
+  if(area){area.innerHTML=`<div class="winner-reveal"><div style="font-size:.75rem;color:var(--t2);margin-bottom:.35rem">🎉 GANADOR</div><div class="winner-name">${winner}</div></div>`;}
+  sysMsg(`🎉 Ganador del sorteo "${g.name}": ${winner}`);
+}
+
+// ─── REGULARS ───
+async function renderRegulars() {
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-primary btn-sm" onclick="openRegularModal()">+ Agregar regular</button>`;
+  const regulars=await api('/api/regulars');
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat-box"><div class="stat-icon si-amber">⭐</div><div class="stat-val sv-amber">${regulars.length}</div><div class="stat-lbl">Regulars</div></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">⭐ USUARIOS REGULARES</div></div>
+    ${regulars.length?`<table class="table"><thead><tr><th>Usuario</th><th>Nota</th><th>Agregado</th><th>Acciones</th></tr></thead><tbody>
+    ${regulars.map(r=>`<tr>
+      <td><div style="display:flex;align-items:center;gap:.5rem"><div style="width:28px;height:28px;border-radius:50%;background:var(--s3);display:grid;place-items:center;font-size:.65rem;font-weight:600;color:var(--cyan);font-family:'IBM Plex Mono',monospace">${r.user.replace('@','').slice(0,2).toUpperCase()}</div><span style="font-weight:600;font-family:'IBM Plex Mono',monospace;font-size:.813rem">${r.user}</span></div></td>
+      <td style="color:var(--t2)">${r.note||'—'}</td>
+      <td style="color:var(--t3);font-size:.75rem;font-family:'IBM Plex Mono',monospace">${r.addedAt?new Date(r.addedAt).toLocaleDateString('es'):'-'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteRegular(${r.id})">Remover</button></td>
+    </tr>`).join('')}
+    </tbody></table>`:`<div class="empty"><div class="empty-icon">⭐</div>No hay regulars. Los regulars tienen permisos especiales en el chat.</div>`}
+  </div>`;
+}
+function openRegularModal() {
+  document.getElementById('modal-title').textContent='Agregar Regular';
+  document.getElementById('modal-body').innerHTML=`
+    <div class="form-group" style="margin-bottom:.75rem"><label class="form-label">Usuario de TikTok</label><input class="input" id="reg-user" placeholder="@usuario"></div>
+    <div class="form-group"><label class="form-label">Nota (opcional)</label><input class="input" id="reg-note" placeholder="Fan número 1"></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-primary" onclick="saveRegular()">Agregar</button>`;
+  openModal();
+}
+async function saveRegular() {
+  const user=document.getElementById('reg-user').value.trim(); if(!user)return;
+  await api('/api/regulars','POST',{user:user.startsWith('@')?user:`@${user}`,note:document.getElementById('reg-note').value.trim()});
+  closeModal(); renderRegulars();
+}
+async function deleteRegular(id) { await api(`/api/regulars/${id}`,'DELETE'); renderRegulars(); }
+
+// ─── MODERATION ───
+async function renderModeration() {
+  const [mod, banned]=await Promise.all([api('/api/moderation'),api('/api/bannedwords')]);
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-primary btn-sm" onclick="saveMod()">💾 Guardar cambios</button>`;
+  const c=document.getElementById('page-content');
+  c.innerHTML=`
+  <div class="mod-grid">
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-head"><div class="card-title">🛡 REGLAS DE MODERACIÓN</div></div>
+        <div class="mod-rule">
+          <div class="mod-rule-info"><div class="mod-rule-title">Filtro de links</div><div class="mod-rule-desc">Elimina mensajes con URLs o links</div></div>
+          <div class="mod-rule-controls"><button class="toggle ${mod.links?.enabled?'on':''}" id="mod-links" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="mod-rule">
+          <div class="mod-rule-info"><div class="mod-rule-title">Límite de mayúsculas</div><div class="mod-rule-desc">Máximo <span id="caps-val">${mod.caps?.max||70}</span>% en mayúsculas</div></div>
+          <div class="mod-rule-controls"><input type="range" class="range-input" id="mod-caps-max" min="30" max="100" value="${mod.caps?.max||70}" oninput="document.getElementById('caps-val').textContent=this.value"><button class="toggle ${mod.caps?.enabled?'on':''}" id="mod-caps" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="mod-rule">
+          <div class="mod-rule-info"><div class="mod-rule-title">Anti-spam</div><div class="mod-rule-desc">Bloquea mensajes repetidos o muy rápidos</div></div>
+          <div class="mod-rule-controls"><button class="toggle ${mod.spam?.enabled?'on':''}" id="mod-spam" onclick="this.classList.toggle('on')"></button></div>
+        </div>
+        <div class="mod-rule">
+          <div class="mod-rule-info"><div class="mod-rule-title">Duración del timeout</div><div class="mod-rule-desc"><span id="timeout-val">${mod.timeout||300}</span> segundos</div></div>
+          <div class="mod-rule-controls"><input type="range" class="range-input" id="mod-timeout" min="30" max="3600" value="${mod.timeout||300}" oninput="document.getElementById('timeout-val').textContent=this.value"></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">🚫 PALABRAS BANEADAS</div><button class="btn btn-ghost btn-sm" onclick="openBanWordModal()">+ Agregar</button></div>
+        <div id="banned-list">
+        ${banned.length?banned.map(w=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1.125rem;border-bottom:1px solid var(--b1)">
+          <code style="background:var(--s3);padding:.2em .6em;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--red)">${w.word}</code>
+          <button class="btn btn-danger btn-sm" onclick="deleteBanWord(${w.id})">Eliminar</button>
+        </div>`).join(''):'<div class="empty"><div class="empty-icon">🚫</div>No hay palabras baneadas</div>'}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+async function saveMod() {
+  const body={links:{enabled:document.getElementById('mod-links').classList.contains('on')},caps:{enabled:document.getElementById('mod-caps').classList.contains('on'),max:parseInt(document.getElementById('mod-caps-max').value)},spam:{enabled:document.getElementById('mod-spam').classList.contains('on')},timeout:parseInt(document.getElementById('mod-timeout').value)};
+  await api('/api/moderation','PUT',body); sysMsg('✅ Configuración de moderación guardada.'); renderModeration();
+}
+function openBanWordModal() {
+  document.getElementById('modal-title').textContent='Banear palabra';
+  document.getElementById('modal-body').innerHTML=`<div class="form-group"><label class="form-label">Palabra o frase</label><input class="input" id="ban-word" placeholder="palabra a banear"></div>`;
+  document.getElementById('modal-footer').innerHTML=`<button class="btn btn-ghost" onclick="closeModal()">Cancelar</button><button class="btn btn-danger" onclick="saveBanWord()">Banear</button>`;
+  openModal();
+}
+async function saveBanWord() { const w=document.getElementById('ban-word').value.trim(); if(!w)return; await api('/api/bannedwords','POST',{word:w}); closeModal(); renderModeration(); }
+async function deleteBanWord(id) { await api(`/api/bannedwords/${id}`,'DELETE'); renderModeration(); }
+
+// ─── LOGS ───
+let logFilter='all';
+async function renderLogs() {
+  const logs=await api('/api/logs');
+  document.getElementById('topbar-actions').innerHTML=`<button class="btn btn-ghost btn-sm" onclick="clearLogs()">🗑 Limpiar logs</button>`;
+  const c=document.getElementById('page-content');
+  const types=['all','chat','command','mod','gift','system','timer'];
+  const icons={chat:'💬',command:'⌘',mod:'🛡',gift:'🎁',system:'⚙️',timer:'⏱',follow:'💜'};
+  const filtered=logFilter==='all'?logs:logs.filter(l=>l.type===logFilter);
+  c.innerHTML=`
+  <div class="log-filters">
+    ${types.map(t=>`<button class="log-filter ${logFilter===t?'active':''}" onclick="logFilter='${t}';renderLogs()">${t==='all'?'Todos':t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title">📋 REGISTRO DE ACTIVIDAD</div><span style="font-size:.7rem;color:var(--t3)">${filtered.length} entradas</span></div>
+    <div class="card-body p0">
+    ${filtered.length?filtered.map(l=>`<div class="log-entry fade-in">
+      <div class="log-icon log-type-${l.type}">${icons[l.type]||'•'}</div>
+      <div class="log-time">${new Date(l.ts).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</div>
+      <div class="log-text">${l.user?`<span class="user">${l.user}</span> `:''}${l.text||''}</div>
+      <span class="badge badge-gray" style="font-size:.58rem">${l.type}</span>
+    </div>`).join(''):`<div class="empty"><div class="empty-icon">📋</div>No hay logs todavía.</div>`}
+    </div>
+  </div>`;
+}
+async function clearLogs() { if(!confirm('¿Limpiar todos los logs?'))return; await fetch('/api/logs',{method:'DELETE'}).catch(()=>{}); renderLogs(); }
+
+// ============================================================
+// API HELPERS
+// ============================================================
+async function api(url, method='GET', body=null) {
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body) opts.body=JSON.stringify(body);
+  try{const r=await fetch(url,opts);return await r.json();}catch{return method==='GET'?[]:{};}
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function openModal() { document.getElementById('modal').classList.add('open'); }
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmt(s){const m=Math.floor(s/60),sec=s%60;return`${m}:${String(sec).padStart(2,'0')}`;}
+function startLiveTimer(){liveTimer=setInterval(()=>{liveStats.liveSecs++;},1000);}
+function stopLiveTimer(){clearInterval(liveTimer);clearInterval(progTimer);}
+
+// Enter key
+document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='Enter')connectToLive();});
 </script>
 </body>
 </html>
